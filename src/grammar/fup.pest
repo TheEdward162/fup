@@ -1,53 +1,81 @@
-// Based on r5rs.pest
+// fup
+//
 
-number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT*)? }
+file = _{ SOI ~ expr+ ~ EOI }
 
-string_element = { "\\" | "\\\"" | !("\"" | "\\") ~ ANY }
-string = @{ "\"" ~ string_element* ~ "\"" }
-
-character_name = { "space" | "newline" }
-character = @{ "#\\" ~ character_name | "#\\" ~ ANY }
-
-boolean = @{ "#t" | "#f" }
-
-variable = { !syntactic_keyword ~ identifier }
-
-expression_keyword = {
-	"quote" | "lambda" | "if" | "set!" | "begin" | "cond" | "and" | "or" |
-	"case" | "let" | "let*" | "letrec" | "do" | "delay" | "quasiquote"
-}
-syntactic_keyword = { expression_keyword | "else" | "=>" | "define" | "unquote" | "unquote-splicing" }
-
-peculiar_identifier = { "+" | "-" } // ?
-special_subsequent = { "+" | "-" | "." | "@" }
-
-digit = { ASCII_DIGIT }
-subsequent = { initial | digit | special_subsequent }
-special_initial = { "!" | "$" | "%" | "&" | "*" | "/" | ":" | "<" | "=" | ">" | "?" | "^" | "_" | "~" }
-
-letter = { 'a'..'z' | 'A'..'Z' }
-initial = { letter | special_initial }
-identifier = @{ (initial ~ subsequent*) | peculiar_identifier }
-
-
-COMMENT = @{ ";" ~ (!line_break ~ ANY)* ~ line_break }
-WHITESPACE = _{ " " | "\t" | line_break }
-line_break = { "\n" | "\r\n" }
-
-delimiter = { WHITESPACE | "(" | ")" | "\"" | ";" }
-token = {
-	identifier | boolean | number | character | string |
-	"(" | ")" | "#(" | "'" | "`" | "," | ",@" | "."
+expr = _{
+	fexpr |
+	sexpr |
+	atom
 }
 
-aug_definition = {
-	"define" ~ identifier ~ "(" ~ (variable ~ ("," ~ variable)*)? ~ ")" ~
-	"{" ~ augmented_token+ ~ "}"
+fexpr = {
+	define
+	// TODO more custom stuff
 }
 
-augmented_token = _{
-	aug_definition | token
+define = {
+	"define" ~ name ~ "=" ~ value ~ ";" |
+	"define" ~ name ~ "(" ~ params ~ ")" ~ "{" ~ body ~ "}"
+}
+	params = {
+		(name ~ ("," ~ name)* ~ ","?)?
+	}
+	body = {
+		expr*
+	}
+	value = {
+		expr
+	}
+
+
+// scheme
+//
+
+sexpr = {
+	"(" ~ ( atom | sexpr )* ~ ")"
+	// TODO quoting and stuff
 }
 
-tokens = _{ augmented_token* }
-file = _{ SOI ~ tokens ~ EOI }
+atom = ${
+	number |
+	boolean |
+	character |
+	string |
+	ident
+}
+
+number = @{
+	digit+ ~ ("." ~ digit*)?
+}
+name = @{
+	letter ~ ( "_" | letter | digit )*
+}
+ident = @{
+	(special | letter) ~ (special | letter | digit)*
+}
+boolean = @{
+	"#t" | "#f"
+}
+character = @{
+	"#\\" ~ character_name | "#\\" ~ ANY
+}
+	character_name = {
+		"space" | "newline"
+	}
+string = @{
+	"\"" ~ string_element* ~ "\""
+}
+	string_element = _{
+		"\\" | "\\\"" | !("\"" | "\\") ~ ANY
+	}
+
+special = _{
+	"!" | "\"" | "#" | "$" | "%" | "&" | "*" | "+" | "," | "-" | "." |
+	"/" | ":" | "<" | "=" | ">" | "?" | "@" | "^" | "_" | "|" | "~"
+}
+digit = _{ ASCII_DIGIT }
+letter = _{ 'a'..'z' | 'A'..'Z' }
+
+COMMENT = _{ ";" ~ (!"\n" ~ ANY)* ~ "\n" }
+WHITESPACE = _{ " " | "\t" | "\n" }
