@@ -1,0 +1,10 @@
+[package]
+name = "fup"
+description = "FUP - Fuck Unclosed Parens"
+version = "0.1.0"
+authors = ["TheEdward162 <TheEdward162@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+pest = "2"
+pest_derive = "2"

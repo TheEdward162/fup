@@ -1,0 +1,53 @@
+// Based on r5rs.pest
+
+number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT*)? }
+
+string_element = { "\\" | "\\\"" | !("\"" | "\\") ~ ANY }
+string = @{ "\"" ~ string_element* ~ "\"" }
+
+character_name = { "space" | "newline" }
+character = @{ "#\\" ~ character_name | "#\\" ~ ANY }
+
+boolean = @{ "#t" | "#f" }
+
+variable = { !syntactic_keyword ~ identifier }
+
+expression_keyword = {
+	"quote" | "lambda" | "if" | "set!" | "begin" | "cond" | "and" | "or" |
+	"case" | "let" | "let*" | "letrec" | "do" | "delay" | "quasiquote"
+}
+syntactic_keyword = { expression_keyword | "else" | "=>" | "define" | "unquote" | "unquote-splicing" }
+
+peculiar_identifier = { "+" | "-" } // ?
+special_subsequent = { "+" | "-" | "." | "@" }
+
+digit = { ASCII_DIGIT }
+subsequent = { initial | digit | special_subsequent }
+special_initial = { "!" | "$" | "%" | "&" | "*" | "/" | ":" | "<" | "=" | ">" | "?" | "^" | "_" | "~" }
+
+letter = { 'a'..'z' | 'A'..'Z' }
+initial = { letter | special_initial }
+identifier = @{ (initial ~ subsequent*) | peculiar_identifier }
+
+
+COMMENT = @{ ";" ~ (!line_break ~ ANY)* ~ line_break }
+WHITESPACE = _{ " " | "\t" | line_break }
+line_break = { "\n" | "\r\n" }
+
+delimiter = { WHITESPACE | "(" | ")" | "\"" | ";" }
+token = {
+	identifier | boolean | number | character | string |
+	"(" | ")" | "#(" | "'" | "`" | "," | ",@" | "."
+}
+
+aug_definition = {
+	"define" ~ identifier ~ "(" ~ (variable ~ ("," ~ variable)*)? ~ ")" ~
+	"{" ~ augmented_token+ ~ "}"
+}
+
+augmented_token = _{
+	aug_definition | token
+}
+
+tokens = _{ augmented_token* }
+file = _{ SOI ~ tokens ~ EOI }
