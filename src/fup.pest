@@ -44,15 +44,22 @@ FupCall = {
 
 // List indexing
 FupIndex = {
-	Name ~ "[" ~ IndexNumber ~ IndexTail? ~ "]"
+	Name ~ "[" ~ (FupIndexFull | FupIndexOpenLeft | FupIndexOpenRight | FupIndexExact) ~ "]"
 }
-
+FupIndexExact = {
+	IndexNumber
+}
+FupIndexOpenRight = {
+	IndexNumber ~ ".."
+}
+FupIndexOpenLeft = {
+	".." ~ IndexNumber
+}
+FupIndexFull = {
+	IndexNumber ~ ".." ~ IndexNumber
+}
 IndexNumber = @{
 	Digit+
-}
-
-IndexTail = {
-	".."
 }
 
 // Cond expression

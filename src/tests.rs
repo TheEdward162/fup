@@ -2,6 +2,13 @@ use super::parse_input_str;
 
 macro_rules! grammar_tree {
 	(
+		()
+	) => {
+		$crate::grammar::GrammarTree::List(
+			Vec::new()
+		)
+	};
+	(
 		( $( $tok: tt )+ )
 	) => {
 		grammar_tree!($( $tok )+)
@@ -57,7 +64,22 @@ macro_rules! test {
 
 test! {
 	scheme,
-	include_str!("tests/scheme.scm"),
+	r#"
+		( ; Compute fibonacci number
+			define (fib n)
+			(cond
+				((= n 0) 0)
+				((= n 1) 1)
+				(#t (
+					+
+					(fib (- n 1))
+					(fib (- n 2))
+				))
+			)
+		)
+
+		(fib 10)
+	"#,
 	(
 		"define" ("fib" "n")
 		("cond"
@@ -76,21 +98,29 @@ test! {
 
 test! {
 	define,
-	include_str!("tests/define.scm"),
+	r#"
+		define FOO(x) {
+			(+ x 1)
+		}
+
+		(display (FOO 1))
+
+		(define (FOO x) (+ x 1))
+	"#,
 	(
 		"define"
 		("FOO" "x")
 		("+" "x" "1")
 	)
-		(
-			"display"
-			("FOO" "1")
-		)
-		(
-			"define"
-			("FOO" "x")
-			("+" "x" "1")
-		)
+	(
+		"display"
+		("FOO" "1")
+	)
+	(
+		"define"
+		("FOO" "x")
+		("+" "x" "1")
+	)
 }
 
 test! {
@@ -102,18 +132,65 @@ test! {
 }
 
 test! {
-	index,
+	index_exact,
 	r#"
 		a[1]
-		b[2..]
 	"#,
 	("car" ("cdr" "a"))
+}
+test! {
+	index_right_open,
+	r#"
+		b[2..]
+	"#,
 	("cdr" ("cdr" "b"))
+}
+test! {
+	index_left_open,
+	r#"
+		c[..2]
+	"#,
+	(
+		"list"
+		("car" "c")
+		("car" ("cdr" "c"))
+	)
+}
+test! {
+	index_full_empty,
+	r#"
+		d[1..1]
+	"#,
+	()
+}
+test! {
+	index_full,
+	r#"
+		e[1..3]
+	"#,
+	(
+		"list"
+		("car" ("cdr" "e"))
+		("car" ("cdr" ("cdr" "e")))
+	)
 }
 
 test! {
 	cond,
-	include_str!("tests/cond.scm"),
+	r#"
+		cond {
+			(= 1 2) => (display 1),
+			(= 1 3) => (display 2),
+			else => (display 3)
+		}
+
+		(cond ((= 1 2) (display 1)) ((= 1 3) (display 2)) (else (display 3)))
+	"#,
+	("cond"
+		(("=" "1" "2") ("display" "1"))
+		(("=" "1" "3") ("display" "2"))
+		("else" ("display" "3"))
+	)
 	("cond"
 		(("=" "1" "2") ("display" "1"))
 		(("=" "1" "3") ("display" "2"))
