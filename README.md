@@ -4,6 +4,14 @@ FUP is a preprocessor for Scheme programming language. It is intended to help av
 
 FUP uses [pest.rs](https://pest.rs/) to parse Scheme and augmented expression. Augmented expressions are then converted to Scheme and valid Scheme code is output.
 
+## Usage
+
+The binary currently has two modes - file and repl.
+
+To start the repl, run the binary with no arguments. To read input from file, start the binary with the first cli argument set to the file path.
+
+To exit the repl, type in `,exit`. By default, repl runs in multiline mode, which means input is buffered until an empty newline is passed. To turn this off, pass `,mline` which toggles between multiline and immediate evaluation.
+
 ## FUP expressions
 
 Currently, FUP supports these augmented expressions:
