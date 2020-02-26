@@ -71,12 +71,31 @@ Lists can be indexed to avoid nested `car`s and `cdr`s from making list accesses
 lst[1]
 
 lst[2..]
+
+lst[..2]
+
+lst[1..1]
+
+lst[1..3]
 ```
 becomes
 ```scheme
 (car (cdr lst))
 
 (cdr (cdr lst))
+
+(list
+	(car c)
+	(car (cdr c)
+)
+
+()
+
+(
+	list
+	(car (cdr e))
+	(car (cdr (cdr e)))
+)
 ```
 
 ## Planned features
