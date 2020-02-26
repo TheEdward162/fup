@@ -17,25 +17,15 @@ type Pair<'i> = pest::iterators::Pair<'i, Rule>;
 fn parse_input_str(input: &str) -> Result<grammar::GrammarTree, pest::error::Error<Rule>> {
 	let pairs = FupParser::parse(Rule::Input, input)?;
 
-	let tree = grammar::GrammarTree::List(pairs.into_iter().filter_map(parse_input).collect());
+	let tree = grammar::GrammarTree::List(
+		pairs
+			.into_iter()
+			.filter(|p| p.as_rule() != Rule::EOI)
+			.map(fup::parse_fup_expression)
+			.collect()
+	);
 
 	Ok(tree)
-}
-fn parse_input(pair: Pair) -> Option<grammar::GrammarTree> {
-	match pair.as_rule() {
-		Rule::FupExpression | Rule::SchemeExpression => Some(parse_augmented_expression(pair)),
-		Rule::EOI => None,
-
-		_ => unreachable!()
-	}
-}
-fn parse_augmented_expression(pair: Pair) -> grammar::GrammarTree {
-	match pair.as_rule() {
-		Rule::FupExpression => fup::parse_fup_expression(pair),
-		Rule::SchemeExpression => scheme::parse_scheme_expression(pair),
-
-		_ => unreachable!()
-	}
 }
 
 fn process_input_str(input: &str) {

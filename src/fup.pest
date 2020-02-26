@@ -1,17 +1,11 @@
 // FUP - Fuck Unclosed Parens
 
-Input = _{ SOI ~ AugmentedExpression+ ~ EOI }
-
-AugmentedExpression = _{
-	FupExpression |
-	SchemeExpression
-}
+Input = _{ SOI ~ FupExpression+ ~ EOI }
 
 // FUP rules
 FupExpression = {
 	FupDefine |
 	FupTerm ~ (FupInfixOp ~ FupTerm)*
-	// TODO let, ...
 }
 
 // Atomic FUP expression
@@ -32,20 +26,16 @@ FupTerm = {
 FnParameters = {
 	(Name ~ ("," ~ Name)* ~ ","?)?
 }
-// Body of a block enclosed in `{}`
-BlockBody = {
-	AugmentedExpression*
-}
 
 // Define special form, with shortcut for function definition
 FupDefine = {
-	"define" ~ Name ~ "=" ~ AugmentedExpression ~ ";" |
-	"define" ~ Name ~ "(" ~ FnParameters ~ ")" ~ "{" ~ BlockBody ~ "}"
+	"define" ~ Name ~ "=" ~ FupExpression ~ ";" |
+	"define" ~ Name ~ "(" ~ FnParameters ~ ")" ~ "{" ~ FupExpression* ~ "}"
 }
 
 // Arguments for function call
 FnArguments = {
-	(AugmentedExpression ~ ("," ~ AugmentedExpression)* ~ ","?)?
+	(FupExpression ~ ("," ~ FupExpression)* ~ ","?)?
 }
 
 // Function call
@@ -80,7 +70,7 @@ FupCond = {
 
 // One arm of cond expression
 CondArm = {
-	AugmentedExpression ~ "=>" ~ AugmentedExpression
+	FupExpression ~ "=>" ~ FupExpression
 }
 
 // Infix operators
