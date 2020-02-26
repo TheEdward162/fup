@@ -23,9 +23,7 @@ fn parse_input_str(input: &str) -> Result<grammar::GrammarTree, pest::error::Err
 }
 fn parse_input(pair: Pair) -> Option<grammar::GrammarTree> {
 	match pair.as_rule() {
-		Rule::FupExpression | Rule::SchemeExpression | Rule::Atom => {
-			Some(parse_augmented_expression(pair))
-		}
+		Rule::FupExpression | Rule::SchemeExpression => Some(parse_augmented_expression(pair)),
 		Rule::EOI => None,
 
 		_ => unreachable!()
@@ -35,7 +33,6 @@ fn parse_augmented_expression(pair: Pair) -> grammar::GrammarTree {
 	match pair.as_rule() {
 		Rule::FupExpression => fup::parse_fup_expression(pair),
 		Rule::SchemeExpression => scheme::parse_scheme_expression(pair),
-		Rule::Atom => pair.into(),
 
 		_ => unreachable!()
 	}
