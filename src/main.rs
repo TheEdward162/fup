@@ -5,8 +5,11 @@ mod fup;
 mod grammar;
 mod scheme;
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Parser)]
-#[grammar = "grammar/fup.pest"]
+#[grammar = "fup.pest"]
 pub struct FupParser;
 
 type Pair<'i> = pest::iterators::Pair<'i, Rule>;
@@ -90,91 +93,5 @@ fn main() {
 		process_input_str(&input);
 	} else {
 		repl();
-	}
-}
-
-#[cfg(test)]
-mod test {
-	use super::parse_input_str;
-
-	macro_rules! grammar_tree {
-		(
-			( $( $tok: tt )+ )
-		) => {
-			grammar_tree!($( $tok )+)
-		};
-		(
-			$atom: literal
-		) => {
-			$crate::grammar::GrammarTree::Atom($atom)
-		};
-		(
-			$( $tok: tt )+
-		) => {
-			$crate::grammar::GrammarTree::List(
-				vec![
-					$(
-						grammar_tree!($tok),
-					)+
-				]
-			)
-		};
-	}
-
-	#[test]
-	fn test_scheme() {
-		const FILE: &str = include_str!("grammar/test_scheme.scm");
-
-		let actual = parse_input_str(FILE).unwrap();
-
-		let expected = grammar_tree! {
-			(
-				"define" ("fib" "n")
-				("cond"
-					(("=" "n" "0") "0")
-					(("=" "n" "1") "1")
-					("#t" (
-						"+"
-						("fib" ("-" "n" "1"))
-						("fib" ("-" "n" "2"))
-					))
-				)
-			)
-
-			("fib" "10")
-		};
-
-		assert_eq!(actual, expected);
-	}
-
-	#[test]
-	fn test_define() {
-		const FILE: &str = include_str!("grammar/test_define.scm");
-
-		let actual = parse_input_str(FILE).unwrap();
-
-		let expected = grammar_tree! {
-			(
-				"define"
-				("FOO" "x")
-				("+" "x" "1")
-			)
-			(
-				"display"
-				("FOO" "1")
-			)
-		};
-
-		assert_eq!(actual, expected);
-	}
-
-	#[test]
-	#[ignore]
-	fn test_cond() {
-		const FILE: &str = include_str!("grammar/test_cond.scm");
-
-		let actual = parse_input_str(FILE).unwrap();
-
-		// TODO
 	}
 }
