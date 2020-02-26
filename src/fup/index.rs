@@ -24,36 +24,35 @@ pub fn parse_index(pair: Pair) -> GrammarTree {
 			if start_index >= end_index {
 				GrammarTree::List(vec![])
 			} else {
-				iter::once(GrammarTree::Atom("list")).chain(
-					index_until(name, end_index).skip(start_index)
-				).collect::<Vec<_>>().into()
+				iter::once(GrammarTree::Atom("list"))
+					.chain(index_until(name, end_index).skip(start_index))
+					.collect::<Vec<_>>()
+					.into()
 			}
 		}
 		// name[.. end] => (list (car name) (car (cdr name)) ... (car .. (cdr name)))
 		Rule::FupIndexOpenLeft => {
-			let end_index: usize = index_range.into_inner().nth(0).unwrap().as_str().parse().unwrap();
-			
-			iter::once(GrammarTree::Atom("list")).chain(
-				index_until(
-					name, end_index
-				)
-			).collect::<Vec<_>>()
-			.into()
+			let end_index: usize =
+				index_range.into_inner().nth(0).unwrap().as_str().parse().unwrap();
+
+			iter::once(GrammarTree::Atom("list"))
+				.chain(index_until(name, end_index))
+				.collect::<Vec<_>>()
+				.into()
 		}
 		// name[start ..] => (cdr .. (cdr name))
 		Rule::FupIndexOpenRight => {
-			let start_index: usize = index_range.into_inner().nth(0).unwrap().as_str().parse().unwrap();
+			let start_index: usize =
+				index_range.into_inner().nth(0).unwrap().as_str().parse().unwrap();
 
 			index_after(name, start_index)
 		}
 		// name[index] => (car (cdr .. (cdr name)))
 		Rule::FupIndexExact => {
-			let exact_index: usize = index_range.into_inner().nth(0).unwrap().as_str().parse().unwrap();
+			let exact_index: usize =
+				index_range.into_inner().nth(0).unwrap().as_str().parse().unwrap();
 
-			vec![
-				GrammarTree::Atom("car"),
-				index_after(name, exact_index)
-			].into()
+			vec![GrammarTree::Atom("car"), index_after(name, exact_index)].into()
 		}
 
 		_ => unreachable!()
@@ -61,18 +60,11 @@ pub fn parse_index(pair: Pair) -> GrammarTree {
 }
 
 fn index_after(name: &str, start_index: usize) -> GrammarTree {
-	(0 .. start_index).fold(
-		GrammarTree::Atom(name),
-		|expr, _| vec!["cdr".into(), expr].into()
-	)
+	(0 .. start_index).fold(GrammarTree::Atom(name), |expr, _| vec!["cdr".into(), expr].into())
 }
 
 fn index_until(name: &str, end_index: usize) -> impl Iterator<Item = GrammarTree> {
 	// Explicitly moving a reference.. that's the brwchkr I know
-	(0 .. end_index).map(move |index| {
-		vec![
-			GrammarTree::Atom("car"),
-			index_after(name, index)
-		].into()
-	})
+	(0 .. end_index)
+		.map(move |index| vec![GrammarTree::Atom("car"), index_after(name, index)].into())
 }

@@ -1,8 +1,8 @@
 use crate::{grammar::GrammarTree, Pair, Rule};
 
-mod define;
 mod call;
 mod cond;
+mod define;
 mod index;
 
 pub fn parse_fup_expression(pair: Pair) -> GrammarTree {
@@ -19,4 +19,3 @@ pub fn parse_fup_expression(pair: Pair) -> GrammarTree {
 	}
 	.into()
 }
-
