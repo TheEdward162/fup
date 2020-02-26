@@ -5,7 +5,8 @@ pub fn parse_scheme_expression(pair: Pair) -> GrammarTree {
 
 	pair.into_inner()
 		.map(|pair| match pair.as_rule() {
-			Rule::SchemeExpression => parse_scheme_expression(pair), /* FIXME: Should be AugmentedExpression */
+			Rule::FupTerm => crate::fup::parse_term(pair),
+			Rule::SchemeExpression => parse_scheme_expression(pair),
 			Rule::Atom => pair.into(),
 			_ => unreachable!()
 		})

@@ -1,40 +1,41 @@
 // FUP - Fuck Unclosed Parens
 
-Input = _{ SOI ~ AugmentedExpression+ ~ EOI }
-
-AugmentedExpression = _{
-	FupExpression |
-	SchemeExpression |
-	Atom
-}
+Input = _{ SOI ~ FupExpression+ ~ EOI }
 
 // FUP rules
 FupExpression = {
 	FupDefine |
+	FupTerm ~ (FupInfixOp ~ FupTerm)*
+}
+
+// Atomic FUP expression
+FupTerm = {
+	"{" ~ FupExpression ~ "}" |
 	FupCall |
 	FupIndex |
-	FupCond
-	// TODO infix operators, brackets, let, ...
+	FupCond |
+	SchemeExpression |
+	Number |
+	Boolean |
+	Character |
+	String |
+	Name
 }
 
 // Parameters for a function definition
 FnParameters = {
 	(Name ~ ("," ~ Name)* ~ ","?)?
 }
-// Body of a block enclosed in `{}`
-BlockBody = {
-	AugmentedExpression*
-}
 
 // Define special form, with shortcut for function definition
 FupDefine = {
-	"define" ~ Name ~ "=" ~ AugmentedExpression ~ ";" |
-	"define" ~ Name ~ "(" ~ FnParameters ~ ")" ~ "{" ~ BlockBody ~ "}"
+	"define" ~ Name ~ "=" ~ FupExpression ~ ";" |
+	"define" ~ Name ~ "(" ~ FnParameters ~ ")" ~ "{" ~ FupExpression* ~ "}"
 }
 
 // Arguments for function call
 FnArguments = {
-	(AugmentedExpression ~ ("," ~ AugmentedExpression)* ~ ","?)?
+	(FupExpression ~ ("," ~ FupExpression)* ~ ","?)?
 }
 
 // Function call
@@ -69,12 +70,56 @@ FupCond = {
 
 // One arm of cond expression
 CondArm = {
-	AugmentedExpression ~ "=>" ~ AugmentedExpression
+	FupExpression ~ "=>" ~ FupExpression
 }
+
+// Infix operators
+FupInfixOp = _{
+	OpAppend |
+	OpCons |
+	OpAdd |
+	OpSubtract |
+	OpMultiply |
+	OpDivide |
+	OpModulo |
+	OpAnd |
+	OpOr |
+	OpLowerThanOrEqual |
+	OpGreaterThanOrEqual |
+	OpLowerThen |
+	OpGreaterThen |
+	OpEq |
+	OpEqv |
+	OpEqual |
+	OpMathEqual
+}
+OpAppend = { "++" }
+OpCons = { ":" }
+OpAdd = { "+" }
+OpSubtract = { "-" }
+OpMultiply = { "*" }
+OpDivide = { "/" }
+OpModulo = { "%" }
+OpAnd = { "and" }
+OpOr = { "or" }
+OpLowerThanOrEqual = { "<=" }
+OpGreaterThanOrEqual = { ">=" }
+OpLowerThen = { "<" }
+OpGreaterThen = { ">" }
+OpEq = { "is" | "eq?" }
+OpEqv = { "eqv?" }
+OpEqual = { "==" | "equal?" }
+OpMathEqual = { "=" }
+
+// FUP names, subset of Scheme identifiers without special symbols (operators)
+Name = @{
+	Letter ~ ( "_" | Letter | Digit )*
+}
+
 
 // Scheme rules
 SchemeExpression = {
-	"(" ~ ( Atom | SchemeExpression )* ~ ")"
+	"(" ~ ( FupTerm | SchemeExpression | Atom )* ~ ")"
 }
 
 Atom = ${
@@ -87,11 +132,6 @@ Atom = ${
 
 Number = @{
 	Digit+ ~ ("." ~ Digit*)?
-}
-
-// FUP names, subset of Scheme identifiers without special symbols (operators)
-Name = @{
-	Letter ~ ( "_" | Letter | Digit )*
 }
 
 // Scheme identifier
