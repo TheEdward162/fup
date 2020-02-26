@@ -1,131 +1,180 @@
 use pest::Parser;
 use pest_derive::Parser;
-use std::iter;
+
+mod fup;
+mod grammar;
+mod scheme;
 
 #[derive(Parser)]
 #[grammar = "grammar/fup.pest"]
 pub struct FupParser;
 
-#[derive(Debug)]
-pub enum Scheme<'i> {
-	Atom(&'i str),
-	List(Vec<Scheme<'i>>),
-}
-
-impl<'i> From<Pair<'i>> for Scheme<'i> {
-	fn from(pair: Pair<'i>) -> Scheme<'i> {
-		Scheme::Atom(pair.as_str())
-	}
-}
-
-impl<'i> From<&'i str> for Scheme<'i> {
-	fn from(string: &'i str) -> Scheme<'i> {
-		Scheme::Atom(string)
-	}
-}
-
 type Pair<'i> = pest::iterators::Pair<'i, Rule>;
 
-pub fn parse_expr(pair: Pair) -> Option<Scheme> {
+fn parse_input_str(input: &str) -> Result<grammar::GrammarTree, pest::error::Error<Rule>> {
+	let pairs = FupParser::parse(Rule::Input, input)?;
+
+	let tree = grammar::GrammarTree::List(pairs.into_iter().filter_map(parse_input).collect());
+
+	Ok(tree)
+}
+fn parse_input(pair: Pair) -> Option<grammar::GrammarTree> {
 	match pair.as_rule() {
-		Rule::fexpr => Some(fup::parse_fexpr(pair)),
-		Rule::sexpr => Some(scheme::parse_sexpr(pair)),
-		Rule::atom => Some(pair.into()),
+		Rule::FupExpression | Rule::SchemeExpression | Rule::Atom => {
+			Some(parse_augmented_expression(pair))
+		}
 		Rule::EOI => None,
-		_ => unreachable!(),
+
+		_ => unreachable!()
+	}
+}
+fn parse_augmented_expression(pair: Pair) -> grammar::GrammarTree {
+	match pair.as_rule() {
+		Rule::FupExpression => fup::parse_fup_expression(pair),
+		Rule::SchemeExpression => scheme::parse_scheme_expression(pair),
+		Rule::Atom => pair.into(),
+
+		_ => unreachable!()
 	}
 }
 
-mod fup {
-	use super::*;
+fn process_input_str(input: &str) {
+	match parse_input_str(input) {
+		Err(e) => eprintln!("{}", e),
+		Ok(tree) => println!("{}", tree)
+	}
+}
 
-	pub fn parse_fexpr(pair: Pair) -> Scheme {
-		assert_eq!(pair.as_rule(), Rule::fexpr);
-		let pair = pair.into_inner().next().unwrap();
-		match pair.as_rule() {
-			Rule::define => parse_define(pair),
-			_ => unreachable!(),
+fn repl() {
+	use std::io::BufRead;
+
+	let stdin = std::io::stdin();
+
+	let mut multiline_mode = true;
+	let mut buffer = String::new();
+
+	for line in stdin.lock().lines() {
+		// Ignore read errors
+		let line = match line {
+			Err(_) => continue,
+			Ok(line) => line
+		};
+
+		// Meta commands
+		if line == ",exit" {
+			break
+		} else if line == ",mline" {
+			multiline_mode = !multiline_mode;
+			eprintln!("Multiline: {}", multiline_mode);
+		}
+
+		if multiline_mode {
+			if line.len() == 0 {
+				process_input_str(&buffer);
+				buffer.clear();
+			} else {
+				buffer.push_str(&line);
+				buffer.push_str("\n");
+			}
+		} else {
+			process_input_str(&line);
 		}
 	}
-
-	fn parse_define(pair: Pair) -> Scheme {
-		assert_eq!(pair.as_rule(), Rule::define);
-		let mut pairs = pair.into_inner();
-		let ident = pairs.next().unwrap().into();
-		let next = pairs.next().unwrap(); // either value or params
-		match next.as_rule() {
-			Rule::value => Scheme::List(vec![ ident, next.into() ]),
-			Rule::params => Scheme::List(
-				iter::once("define".into()) // (define
-				.chain(iter::once(
-					// (fname params)
-					Scheme::List(
-						iter::once(ident)
-						.chain(
-							next.into_inner()
-							.map(Scheme::from)
-						)
-						.collect()
-					),
-				))
-				.chain(
-					pairs.next().unwrap() // body)
-					.into_inner()
-					.filter_map(parse_expr)
-				)
-				.collect()
-			),
-			_ => unreachable!(),
-		}
-	}
 }
-
-mod scheme {
-	use super::*;
-
-	pub fn parse_sexpr(pair: Pair) -> Scheme {
-		assert_eq!(pair.as_rule(), Rule::sexpr);
-		Scheme::List(
-			pair.into_inner()
-				.map(|pair| match pair.as_rule() {
-					Rule::sexpr => parse_sexpr(pair),
-					Rule::atom => parse_atom(pair),
-					_ => unreachable!(),
-				})
-				.collect()
-		)
-	}
-
-	fn parse_atom(pair: Pair) -> Scheme {
-		Scheme::Atom(pair.as_str())
-	}
-}
-
 
 fn main() {
-	use std::io::BufRead;
-	let stdin = std::io::stdin();
-	let mut buf = String::new();
-	for line in stdin.lock().lines() {
-		let line = line.unwrap();
-		if line.len() == 0 {
-			if buf.len() == 0 {
-				break
-			}
-			match FupParser::parse(Rule::file, &buf) {
-				Ok(spans) => println!(
-					"{:#?}",
-					spans.into_iter()
-						.filter_map(parse_expr)
-						.collect::<Vec<_>>()
-				),
-				Err(err) => println!("{}", err),
-			}
-			println!();
-			buf.clear();
-		} else {
-			buf.push_str(&line);
-			buf.push_str("\n");
-		}
+	let mut cli = std::env::args();
+	if cli.len() > 1 {
+		let file = cli.nth(1).unwrap();
+		let input = std::fs::read_to_string(file).expect("Could not read file");
+		process_input_str(&input);
+	} else {
+		repl();
+	}
+}
+
+#[cfg(test)]
+mod test {
+	use super::parse_input_str;
+
+	macro_rules! grammar_tree {
+		(
+			( $( $tok: tt )+ )
+		) => {
+			grammar_tree!($( $tok )+)
+		};
+		(
+			$atom: literal
+		) => {
+			$crate::grammar::GrammarTree::Atom($atom)
+		};
+		(
+			$( $tok: tt )+
+		) => {
+			$crate::grammar::GrammarTree::List(
+				vec![
+					$(
+						grammar_tree!($tok),
+					)+
+				]
+			)
+		};
+	}
+
+	#[test]
+	fn test_scheme() {
+		const FILE: &str = include_str!("grammar/test_scheme.scm");
+
+		let actual = parse_input_str(FILE).unwrap();
+
+		let expected = grammar_tree! {
+			(
+				"define" ("fib" "n")
+				("cond"
+					(("=" "n" "0") "0")
+					(("=" "n" "1") "1")
+					("#t" (
+						"+"
+						("fib" ("-" "n" "1"))
+						("fib" ("-" "n" "2"))
+					))
+				)
+			)
+
+			("fib" "10")
+		};
+
+		assert_eq!(actual, expected);
+	}
+
+	#[test]
+	fn test_define() {
+		const FILE: &str = include_str!("grammar/test_define.scm");
+
+		let actual = parse_input_str(FILE).unwrap();
+
+		let expected = grammar_tree! {
+			(
+				"define"
+				("FOO" "x")
+				("+" "x" "1")
+			)
+			(
+				"display"
+				("FOO" "1")
+			)
+		};
+
+		assert_eq!(actual, expected);
+	}
+
+	#[test]
+	#[ignore]
+	fn test_cond() {
+		const FILE: &str = include_str!("grammar/test_cond.scm");
+
+		let actual = parse_input_str(FILE).unwrap();
+
+		// TODO
 	}
 }

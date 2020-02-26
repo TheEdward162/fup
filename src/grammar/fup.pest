@@ -1,81 +1,81 @@
-// fup
-//
+// FUP - Fuck Unclosed Parens
 
-file = _{ SOI ~ expr+ ~ EOI }
+Input = _{ SOI ~ AugmentedExpression+ ~ EOI }
 
-expr = _{
-	fexpr |
-	sexpr |
-	atom
+AugmentedExpression = _{
+	FupExpression |
+	SchemeExpression |
+	Atom
 }
 
-fexpr = {
-	define
-	// TODO more custom stuff
+// FUP rules
+FupExpression = {
+	FupDefine
+	// TODO: cond, list indexing, more..
 }
 
-define = {
-	"define" ~ name ~ "=" ~ value ~ ";" |
-	"define" ~ name ~ "(" ~ params ~ ")" ~ "{" ~ body ~ "}"
+// Arguments for a function definition, call, etc.
+FnArguments = {
+	(Name ~ ("," ~ Name)*)?
 }
-	params = {
-		(name ~ ("," ~ name)* ~ ","?)?
-	}
-	body = {
-		expr*
-	}
-	value = {
-		expr
-	}
-
-
-// scheme
-//
-
-sexpr = {
-	"(" ~ ( atom | sexpr )* ~ ")"
-	// TODO quoting and stuff
+// Body of a block enclosed in `{}`
+BlockBody = {
+	AugmentedExpression*
 }
 
-atom = ${
-	number |
-	boolean |
-	character |
-	string |
-	ident
+// Define `
+FupDefine = {
+	"define" ~ Name ~ "=" ~ AugmentedExpression ~ ";" |
+	"define" ~ Name ~ "(" ~ FnArguments ~ ")" ~ "{" ~ BlockBody ~ "}"
 }
 
-number = @{
-	digit+ ~ ("." ~ digit*)?
+// Scheme rules
+SchemeExpression = {
+	"(" ~ ( Atom | SchemeExpression )* ~ ")"
 }
-name = @{
-	letter ~ ( "_" | letter | digit )*
+
+Atom = ${
+	Number |
+	Boolean |
+	Character |
+	String |
+	Identifier
 }
-ident = @{
-	(special | letter) ~ (special | letter | digit)*
+
+Number = @{
+	Digit+ ~ ("." ~ Digit*)?
 }
-boolean = @{
+Name = @{
+	Letter ~ ( "_" | Letter | Digit )*
+}
+Identifier = @{
+	(Special | Letter) ~ (Special | Letter | Digit)*
+}
+
+Boolean = @{
 	"#t" | "#f"
 }
-character = @{
-	"#\\" ~ character_name | "#\\" ~ ANY
-}
-	character_name = {
-		"space" | "newline"
-	}
-string = @{
-	"\"" ~ string_element* ~ "\""
-}
-	string_element = _{
-		"\\" | "\\\"" | !("\"" | "\\") ~ ANY
-	}
 
-special = _{
+Character = @{
+	"#\\" ~ CharacterName | "#\\" ~ ANY
+}
+CharacterName = {
+	"space" | "newline"
+}
+
+String = @{
+	"\"" ~ StringElement* ~ "\""
+}
+StringElement = _{
+	"\\" | "\\\"" | !("\"" | "\\") ~ ANY
+}
+
+Special = _{
 	"!" | "\"" | "#" | "$" | "%" | "&" | "*" | "+" | "," | "-" | "." |
 	"/" | ":" | "<" | "=" | ">" | "?" | "@" | "^" | "_" | "|" | "~"
 }
-digit = _{ ASCII_DIGIT }
-letter = _{ 'a'..'z' | 'A'..'Z' }
+Digit = _{ ASCII_DIGIT }
+Letter = _{ 'a'..'z' | 'A'..'Z' }
 
-COMMENT = _{ ";" ~ (!"\n" ~ ANY)* ~ "\n" }
+COMMENT = _{ ";" ~ (!"\n" ~ ANY)* ~ ("\n" | EOI) }
 WHITESPACE = _{ " " | "\t" | "\n" }
