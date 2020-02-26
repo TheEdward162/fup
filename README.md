@@ -1,4 +1,4 @@
-# FUP - Fuck Unlosed Parens
+# FUP - Fuck Un(losed Parens
 
 FUP is a preprocessor for Scheme programming language. It is intended to help avoid the overuse of parens in Scheme in situations when even rainbow colorizers stop helping.
 
@@ -86,7 +86,7 @@ becomes
 
 (list
 	(car c)
-	(car (cdr c)
+	(car (cdr c))
 )
 
 ()
