@@ -1,0 +1,121 @@
+// FUP - Fuck Unclosed Parens
+
+Input = _{ SOI ~ AugmentedExpression+ ~ EOI }
+
+AugmentedExpression = _{
+	FupExpression |
+	SchemeExpression |
+	Atom
+}
+
+// FUP rules
+FupExpression = {
+	FupDefine |
+	FupCall |
+	FupIndex |
+	FupCond
+	// TODO infix operators, brackets, let, ...
+}
+
+// Parameters for a function definition
+FnParameters = {
+	(Name ~ ("," ~ Name)* ~ ","?)?
+}
+// Body of a block enclosed in `{}`
+BlockBody = {
+	AugmentedExpression*
+}
+
+// Define special form, with shortcut for function definition
+FupDefine = {
+	"define" ~ Name ~ "=" ~ AugmentedExpression ~ ";" |
+	"define" ~ Name ~ "(" ~ FnParameters ~ ")" ~ "{" ~ BlockBody ~ "}"
+}
+
+// Arguments for function call
+FnArguments = {
+	(AugmentedExpression ~ ("," ~ AugmentedExpression)* ~ ","?)?
+}
+
+// Function call
+FupCall = {
+	Name ~ "(" ~ FnArguments ~ ")"
+}
+
+// List indexing
+FupIndex = {
+	Name ~ "[" ~ IndexNumber ~ IndexTail? ~ "]"
+}
+
+IndexNumber = @{
+	Digit+
+}
+
+IndexTail = {
+	".."
+}
+
+// Cond expression
+FupCond = {
+	"cond" ~ "{" ~ (CondArm ~ ("," ~ CondArm)* ~ ","?)? ~ "}"
+}
+
+// One arm of cond expression
+CondArm = {
+	AugmentedExpression ~ "=>" ~ AugmentedExpression
+}
+
+// Scheme rules
+SchemeExpression = {
+	"(" ~ ( Atom | SchemeExpression )* ~ ")"
+}
+
+Atom = ${
+	Number |
+	Boolean |
+	Character |
+	String |
+	Identifier
+}
+
+Number = @{
+	Digit+ ~ ("." ~ Digit*)?
+}
+
+// FUP names, subset of Scheme identifiers without special symbols (operators)
+Name = @{
+	Letter ~ ( "_" | Letter | Digit )*
+}
+
+// Scheme identifier
+Identifier = @{
+	(Special | Letter) ~ (Special | Letter | Digit)*
+}
+
+Boolean = @{
+	"#t" | "#f"
+}
+
+Character = @{
+	"#\\" ~ CharacterName | "#\\" ~ ANY
+}
+CharacterName = {
+	"space" | "newline"
+}
+
+String = @{
+	"\"" ~ StringElement* ~ "\""
+}
+StringElement = _{
+	"\\" | "\\\"" | !("\"" | "\\") ~ ANY
+}
+
+Special = _{
+	"!" | "\"" | "#" | "$" | "%" | "&" | "*" | "+" | "-" | "." | "/" |
+	":" | "<" | "=" | ">" | "?" | "@" | "^" | "_" | "|" | "~"
+}
+Digit = _{ ASCII_DIGIT }
+Letter = _{ 'a'..'z' | 'A'..'Z' }
+
+COMMENT = _{ ";" ~ (!"\n" ~ ANY)* ~ ("\n" | EOI) }
+WHITESPACE = _{ " " | "\t" | "\n" }
