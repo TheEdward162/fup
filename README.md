@@ -60,35 +60,35 @@ becomes
 However, calling functions with one or zero arguments has a caveat to avoid ambiguity with natural scheme code:
 
 ```
-foo (x)
+foo (x) ; not a call
 
-foo (x,)
+foo (x,) ; unambiguous call
 
-foo(,)
+foo(,) ; unambiguous call, no arguments
 
-(lambda (x) x)(1,)
+(lambda (x) x)(1,) ; scheme expression call
 
 { cond {
 	#f => foo,
 	#t => bar
-} }(1,)
+} }(1,) ; fup expression call
 ```
 becomes
 ```scheme
-foo (x)
+foo (x) ; not a call
 
-(foo x)
+(foo x) ; unambiguous call
 
-(foo)
+(foo) ; unambiguous call, no arguments
 
-((lambda (x) x) 1)
+((lambda (x) x) 1) ; scheme expression call
 
 (
 	(cond
 		(#f foo)
 		(#t bar)
 	) 1
-)
+) ; fup expression call
 ```
 
 ### Cond
@@ -118,46 +118,46 @@ becomes
 Lists can be indexed to avoid nested `car`s and `cdr`s from making list accesses unreadable:
 
 ```
-lst[1]
+lst[1] ; one element index
 
-lst[2..]
+lst[2..] ; slice-after index
 
-lst[..2]
+lst[..2] ; slice before index
 
-lst[1..1]
+lst[1..1] ; slice between index, empty
 
-lst[1..3]
+lst[1..3] ; slice between index
 
-(list 1 2)[1]
+(list 1 2)[1] ; scheme expression index
 
-{ foo(,) }[0]
+{ foo(,) }[0] ; fup expression index
 ```
 becomes
 ```scheme
-(car (cdr lst))
+(car (cdr lst)) ; one element index
 
-(cdr (cdr lst))
+(cdr (cdr lst)) ; slice-after index
 
 (list
 	(car lst)
 	(car (cdr lst))
-)
+) ; slice before index
 
-()
+() ; slice between index, empty
 
 (
 	list
 	(car (cdr lst))
 	(car (cdr (cdr lst)))
-)
+) ; slice between index
 
 (
 	car (cdr (list 1 2))
-)
+) ; scheme expression index
 
 (
 	car (foo)
-)
+) ; fup expression index
 ```
 
 _**Note**: Be aware that the `..N` and `N..M` variations evaluate the indexed expression as many times as the the length of the resulting list._
@@ -168,9 +168,9 @@ Binary operators can be infixed as in other langauges:
 ```
 1 + 2
 
-a == b
+a == b ; "==" is an alias for "equal?"
 
-#t is #t
+#t is #t ; "is" is an alias for "eq?"
 ```
 becomes
 ```scheme
