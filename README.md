@@ -28,7 +28,7 @@ Currently, FUP supports these augmented expressions:
 
 Helps the readability of define statements:
 
-```
+```scheme
 define foo(x, y) {
 	(display (+ x y))
 }
@@ -49,7 +49,7 @@ becomes
 
 Functions are called in the same way as they are defined:
 
-```
+```scheme
 foo(x, y)
 ```
 becomes
@@ -59,7 +59,7 @@ becomes
 
 However, calling functions with one or zero arguments has a caveat to avoid ambiguity with natural scheme code:
 
-```
+```scheme
 foo (x) ; not a call
 
 foo (x,) ; unambiguous call
@@ -95,7 +95,7 @@ foo (x) ; not a call
 
 Cond works similar to `switch` statemets or the Rust `match` statement:
 
-```
+```scheme
 cond {
 	a => b,
 	c => d,
@@ -117,7 +117,7 @@ becomes
 
 Lists can be indexed to avoid nested `car`s and `cdr`s from making list accesses unreadable:
 
-```
+```scheme
 lst[1] ; one element index
 
 lst[2..] ; slice-after index
@@ -165,7 +165,7 @@ _**Note**: Be aware that the `..N` and `N..M` variations evaluate the indexed ex
 ### Binary operator infixing
 
 Binary operators can be infixed as in other langauges:
-```
+```scheme
 1 + 2
 
 a == b ; "==" is an alias for "equal?"
@@ -187,7 +187,7 @@ _**Note**: To avoid ambiguity, infixed operators only work in non-scheme context
 
 Some FUP expressions (such as infixed operators) can be ambiguous in Scheme contexts. To explicitly create a FUP context and parse expressions as FUP expressions, use `{}` blocks:
 
-```
+```scheme
 (define
 	(foo x y)
 	{x + y}
