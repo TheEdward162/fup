@@ -2,6 +2,11 @@ use super::parse_input_str;
 
 macro_rules! grammar_tree {
 	(
+		$atom: literal
+	) => {
+		$crate::grammar::GrammarTree::Atom($atom)
+	};
+	(
 		()
 	) => {
 		$crate::grammar::GrammarTree::List(
@@ -10,16 +15,6 @@ macro_rules! grammar_tree {
 	};
 	(
 		( $( $tok: tt )+ )
-	) => {
-		grammar_tree!($( $tok )+)
-	};
-	(
-		$atom: literal
-	) => {
-		$crate::grammar::GrammarTree::Atom($atom)
-	};
-	(
-		$( $tok: tt )+
 	) => {
 		$crate::grammar::GrammarTree::List(
 			vec![
@@ -52,11 +47,18 @@ macro_rules! test {
 			);
 
 			if parsed != expected {
-				panic!(
-					"\nEXPECTED:{}\n\nPARSED:\n{}\n\n",
-					expected,
-					parsed,
-				)
+				let fmt_input = format!("INPUT:\n{}", $input_code);
+				let fmt_expected = format!("EXPECTED:\n{}", expected);
+				let fmt_parsed = format!("PARSED:\n{}", parsed);
+				let fmt_tree = format!("TREE:\n{:?}", parsed);
+				let message = format!(
+					"{}\n\n{}\n\n{}\n\n{}",
+					fmt_input,
+					fmt_expected,
+					fmt_parsed,
+					fmt_tree
+				);
+				panic!(message)
 			}
 		}
 	};
@@ -95,6 +97,28 @@ test! {
 
 	("fib" "10")
 }
+test! {
+	scheme_let,
+	r#"
+		(let ((x 1)) x)
+	"#,
+	(
+		"let"
+		(("x" "1"))
+		"x"
+	)
+}
+test! {
+	scheme_let_2,
+	r#"
+		(let ((x 1) (y 1)) (+ x y))
+	"#,
+	(
+		"let"
+		(("x" "1") ("y" "1"))
+		("+" "x" "y")
+	)
+}
 
 test! {
 	define,
@@ -122,13 +146,53 @@ test! {
 		("+" "x" "1")
 	)
 }
+test! {
+	define_with_space,
+	r#"
+		define FOO (x) {
+			(+ x 1)
+		}
+	"#,
+	(
+		"define"
+		("FOO" "x")
+		("+" "x" "1")
+	)
+}
 
 test! {
 	call,
 	r#"
 		func(arg1, arg2)
+
+		func(arg,)
+
+		func (arg,)
+
+		func(,)
 	"#,
 	("func" "arg1" "arg2")
+	("func" "arg")
+	("func" "arg")
+	("func")
+}
+test! {
+	call_expression,
+	r#"
+		{ cond { #f => foo, #t => bar } }(1, 1 + 1)
+		(lambda (x) x)(1,)
+	"#,
+	(
+		("cond"
+			("#f" "foo")
+			("#t" "bar")
+		)
+		"1"
+		("+" "1" "1")
+	)
+	(
+		("lambda" ("x") "x") "1"
+	)
 }
 
 test! {
@@ -174,6 +238,25 @@ test! {
 		("car" ("cdr" ("cdr" "e")))
 	)
 }
+test! {
+	index_expression,
+	r#"
+		{a[0]}[0]
+		
+		(list 1 2)[1]
+
+		{ foo(,) }[0]
+	"#,
+	(
+		"car" ("car" "a")
+	)
+	(
+		"car" ("cdr" ("list" "1" "2"))
+	)
+	(
+		"car" ("foo")
+	)
+}
 
 test! {
 	cond,
@@ -206,18 +289,26 @@ test! {
 		a : b : c
 		a : (cons b c)
 		{1 + 2} * 3
+		(define
+			(foo x y)
+			{x + y}
+		)
 	"#,
 	("*" "6" "7")
 	("-" ("+" "1" "2") ("/" "3" "2"))
 	("cons" "a" ("cons" "b" "c"))
 	("cons" "a" ("cons" "b" "c"))
 	("*" ("+" "1" "2") "3")
+	("define"
+		("foo" "x" "y")
+		("+" "x" "y")
+	)
 }
 
 test! {
 	mixed,
 	r#"
-		(+ 1 a(b))
+		(+ 1 a(b,))
 		(list a[0] a[1])
 		(+ 1 { 6 * 7 })
 		(foo cond { a => b, c => d })
@@ -225,9 +316,13 @@ test! {
 	("+" "1" ("a" "b"))
 	("list"
 		("car" "a")
-		("car" ("cdr" "a")))
+		("car" ("cdr" "a"))
+	)
 	("+" "1" ("*" "6" "7"))
 	("foo"
-		("cond" ("a" "b")
-				("c" "d")))
+		("cond"
+			("a" "b")
+			("c" "d")
+		)
+	)
 }

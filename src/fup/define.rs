@@ -19,7 +19,9 @@ pub fn parse_define(pair: Pair) -> GrammarTree {
 	// define name(parameters..) { body } => (define (name parameters..) body)
 	let expression: Vec<_> = iter::once(GrammarTree::Atom("define"))
 		.chain(iter::once(GrammarTree::List(
-			iter::once(name).chain(parameters.into_inner().map(GrammarTree::from)).collect()
+			iter::once(name)
+				.chain(parameters.into_inner().map(GrammarTree::from))
+				.collect()
 		)))
 		.chain(pairs.map(fup::parse_fup_expression))
 		.collect();

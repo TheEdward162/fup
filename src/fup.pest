@@ -10,11 +10,14 @@ FupExpression = {
 
 // Atomic FUP expression
 FupTerm = {
-	"{" ~ FupExpression ~ "}" |
 	FupCall |
 	FupIndex |
+	
+	"{" ~ FupExpression ~ "}" |
 	FupCond |
+
 	SchemeExpression |
+
 	Number |
 	Boolean |
 	Character |
@@ -35,17 +38,22 @@ FupDefine = {
 
 // Arguments for function call
 FnArguments = {
-	(FupExpression ~ ("," ~ FupExpression)* ~ ","?)?
+	(FupExpression ~ ("," ~ FupExpression)+ ~ ","?) | (FupExpression ~ ",") | ","
 }
 
 // Function call
 FupCall = {
-	Name ~ "(" ~ FnArguments ~ ")"
+	Callable ~ "(" ~ FnArguments ~ ")"
+}
+Callable = {
+	"{" ~ FupExpression ~ "}" |
+	SchemeExpression |
+	Name
 }
 
 // List indexing
 FupIndex = {
-	Name ~ "[" ~ (FupIndexFull | FupIndexOpenLeft | FupIndexOpenRight | FupIndexExact) ~ "]"
+	Indexable ~ "[" ~ (FupIndexFull | FupIndexOpenLeft | FupIndexOpenRight | FupIndexExact) ~ "]"
 }
 FupIndexExact = {
 	IndexNumber
@@ -61,6 +69,11 @@ FupIndexFull = {
 }
 IndexNumber = @{
 	Digit+
+}
+Indexable = {
+	"{" ~ FupExpression ~ "}" |
+	SchemeExpression |
+	Name
 }
 
 // Cond expression
@@ -86,8 +99,8 @@ FupInfixOp = _{
 	OpOr |
 	OpLowerThanOrEqual |
 	OpGreaterThanOrEqual |
-	OpLowerThen |
-	OpGreaterThen |
+	OpLowerThan |
+	OpGreaterThan |
 	OpEq |
 	OpEqv |
 	OpEqual |
@@ -104,8 +117,8 @@ OpAnd = { "and" }
 OpOr = { "or" }
 OpLowerThanOrEqual = { "<=" }
 OpGreaterThanOrEqual = { ">=" }
-OpLowerThen = { "<" }
-OpGreaterThen = { ">" }
+OpLowerThan = { "<" }
+OpGreaterThan = { ">" }
 OpEq = { "is" | "eq?" }
 OpEqv = { "eqv?" }
 OpEqual = { "==" | "equal?" }

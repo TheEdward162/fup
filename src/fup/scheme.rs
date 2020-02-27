@@ -5,7 +5,7 @@ pub fn parse_scheme_expression(pair: Pair) -> GrammarTree {
 
 	pair.into_inner()
 		.map(|pair| match pair.as_rule() {
-			Rule::FupTerm => crate::fup::parse_term(pair),
+			Rule::FupTerm => super::parse_term_like(pair),
 			Rule::SchemeExpression => parse_scheme_expression(pair),
 			Rule::Atom => pair.into(),
 			_ => unreachable!()

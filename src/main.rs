@@ -3,7 +3,8 @@ use pest_derive::Parser;
 
 mod fup;
 mod grammar;
-mod scheme;
+
+mod repl;
 
 #[cfg(test)]
 mod tests;
@@ -35,42 +36,6 @@ fn process_input_str(input: &str) {
 	}
 }
 
-fn repl() {
-	use std::io::BufRead;
-
-	let stdin = std::io::stdin();
-
-	let mut multiline_mode = true;
-	let mut buffer = String::new();
-
-	for line in stdin.lock().lines() {
-		// Ignore read errors
-		let line = match line {
-			Err(_) => continue,
-			Ok(line) => line
-		};
-
-		// Meta commands
-		if line == ",exit" {
-			break
-		} else if line == ",mline" {
-			multiline_mode = !multiline_mode;
-			eprintln!("Multiline: {}", multiline_mode);
-		}
-
-		if multiline_mode {
-			if line.len() == 0 {
-				process_input_str(&buffer);
-				buffer.clear();
-			} else {
-				buffer.push_str(&line);
-				buffer.push_str("\n");
-			}
-		} else {
-			process_input_str(&line);
-		}
-	}
-}
 
 fn main() {
 	let mut cli = std::env::args();
@@ -79,6 +44,6 @@ fn main() {
 		let input = std::fs::read_to_string(file).expect("Could not read file");
 		process_input_str(&input);
 	} else {
-		repl();
+		repl::repl();
 	}
 }

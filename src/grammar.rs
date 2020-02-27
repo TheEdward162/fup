@@ -3,7 +3,7 @@ use std::fmt;
 use crate::Pair;
 
 /// Grammar tree constructed from the parsed input.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum GrammarTree<'i> {
 	Atom(&'i str),
 	List(Vec<Self>)
@@ -15,9 +15,9 @@ impl<'i> GrammarTree<'i> {
 			GrammarTree::Atom(_) => {
 				self.fmt_scheme(f, 0, indent)?;
 			}
-			GrammarTree::List(list) => {
-				list.iter().try_for_each(|t| t.fmt_scheme(f, 0, indent).map(|_| ()))?
-			}
+			GrammarTree::List(list) => list
+				.iter()
+				.try_for_each(|t| t.fmt_scheme(f, 0, indent).map(|_| ()))?
 		};
 
 		Ok(())
@@ -27,7 +27,10 @@ impl<'i> GrammarTree<'i> {
 	///
 	/// Returns `true` if there were any newlines added in the output.
 	pub fn fmt_scheme(
-		&self, f: &mut fmt::Formatter, depth: usize, indent: &str
+		&self,
+		f: &mut fmt::Formatter,
+		depth: usize,
+		indent: &str
 	) -> Result<bool, fmt::Error> {
 		match self {
 			GrammarTree::Atom(atom) => write!(f, "{}", atom).map(|_| false),
@@ -69,14 +72,22 @@ impl<'i> GrammarTree<'i> {
 	}
 }
 impl<'i> fmt::Display for GrammarTree<'i> {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { self.fmt_scheme_top_level(f, "\t") }
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		self.fmt_scheme_top_level(f, "\t")
+	}
 }
 impl<'i> From<Pair<'i>> for GrammarTree<'i> {
-	fn from(pair: Pair<'i>) -> Self { GrammarTree::Atom(pair.as_str()) }
+	fn from(pair: Pair<'i>) -> Self {
+		GrammarTree::Atom(pair.as_str())
+	}
 }
 impl<'i> From<&'i str> for GrammarTree<'i> {
-	fn from(string: &'i str) -> Self { GrammarTree::Atom(string) }
+	fn from(string: &'i str) -> Self {
+		GrammarTree::Atom(string)
+	}
 }
 impl<'i> From<Vec<Self>> for GrammarTree<'i> {
-	fn from(vec: Vec<Self>) -> Self { GrammarTree::List(vec) }
+	fn from(vec: Vec<Self>) -> Self {
+		GrammarTree::List(vec)
+	}
 }

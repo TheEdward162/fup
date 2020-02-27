@@ -7,11 +7,12 @@ pub fn parse_cond(pair: Pair) -> GrammarTree {
 
 	// cond { a => b, .. } => (cond (a b) ..)
 	iter::once("cond".into())
-		.chain(
-			pair.into_inner().map(|arm| {
-				arm.into_inner().map(fup::parse_fup_expression).collect::<Vec<_>>().into()
-			})
-		)
+		.chain(pair.into_inner().map(|arm| {
+			arm.into_inner()
+				.map(fup::parse_fup_expression)
+				.collect::<Vec<_>>()
+				.into()
+		}))
 		.collect::<Vec<_>>()
 		.into()
 }

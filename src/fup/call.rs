@@ -7,11 +7,11 @@ pub fn parse_call(pair: Pair) -> GrammarTree {
 
 	let mut pairs = pair.into_inner();
 
-	let name = pairs.next().unwrap();
+	let callable: GrammarTree = super::parse_term_like(pairs.next().unwrap());
 	let arguments = pairs.next().unwrap();
 
-	// name(arguments..) => (name arguments..)
-	let expression: Vec<_> = iter::once(name.into())
+	// callable(arguments..) => (callable arguments..)
+	let expression: Vec<_> = iter::once(callable)
 		.chain(arguments.into_inner().map(fup::parse_fup_expression))
 		.collect();
 

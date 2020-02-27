@@ -44,7 +44,7 @@ fn climber() -> &'static PrecClimber<Rule> {
 				L OpOr,
 				L OpAnd,
 				L OpLowerThanOrEqual | OpGreaterThanOrEqual,
-				L OpLowerThen | OpGreaterThen,
+				L OpLowerThan | OpGreaterThan,
 				L OpAdd | OpSubtract,
 				L OpMultiply | OpDivide | OpModulo,
 				L OpEq,
@@ -61,21 +61,8 @@ fn climber() -> &'static PrecClimber<Rule> {
 
 pub fn parse_fup_expression(pair: Pair) -> GrammarTree {
 	assert_eq!(pair.as_rule(), Rule::FupExpression);
+
 	climber().climb(pair.into_inner(), climber_term, climber_infix)
-}
-
-pub fn parse_term(pair: Pair) -> GrammarTree {
-	let inner = pair.into_inner().nth(0).unwrap();
-	match inner.as_rule() {
-		Rule::FupExpression => parse_fup_expression(inner),
-		Rule::FupCall => crate::fup::call::parse_call(inner),
-		Rule::FupIndex => crate::fup::index::parse_index(inner),
-		Rule::FupCond => crate::fup::cond::parse_cond(inner),
-		Rule::SchemeExpression => crate::scheme::parse_scheme_expression(inner),
-		Rule::Number | Rule::Boolean | Rule::Character | Rule::String | Rule::Name => inner.into(),
-
-		_ => unreachable!()
-	}
 }
 
 fn climber_infix<'i>(lhs: GrammarTree<'i>, op: Pair<'i>, rhs: GrammarTree<'i>) -> GrammarTree<'i> {
@@ -85,7 +72,7 @@ fn climber_infix<'i>(lhs: GrammarTree<'i>, op: Pair<'i>, rhs: GrammarTree<'i>) -
 fn climber_term(pair: Pair) -> GrammarTree {
 	match pair.as_rule() {
 		Rule::FupDefine => super::define::parse_define(pair),
-		Rule::FupTerm => parse_term(pair),
+		Rule::FupTerm => super::parse_term_like(pair),
 
 		_ => unreachable!()
 	}
@@ -105,8 +92,8 @@ fn parse_infix_operator(pair: Pair) -> GrammarTree<'static> {
 		Rule::OpOr => "or",
 		Rule::OpLowerThanOrEqual => "<=",
 		Rule::OpGreaterThanOrEqual => ">=",
-		Rule::OpLowerThen => "<",
-		Rule::OpGreaterThen => ">",
+		Rule::OpLowerThan => "<",
+		Rule::OpGreaterThan => ">",
 		Rule::OpEq => "eq?",
 		Rule::OpEqv => "eqv?",
 		Rule::OpEqual => "equal?",
