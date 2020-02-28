@@ -194,6 +194,20 @@ test! {
 		"y"
 	)
 }
+test! {
+	let_unscoped,
+	r#"
+		let x = 1
+		(display x)
+	"#,
+	(
+		"let"
+		(
+			("x" "1")
+		)
+		("display" "x")
+	)
+}
 
 // CALL
 test! {
