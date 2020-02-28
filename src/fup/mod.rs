@@ -3,17 +3,23 @@ mod cond;
 mod define;
 mod expression;
 mod index;
+mod let_any;
 mod scheme;
 
 pub use expression::parse_fup_expression;
 
 use crate::{grammar::GrammarTree, Pair, Rule};
 
-/// Parses all possible non-terminal rules and `FupTerm` terminal rules.
+/// Parses rules that are gramatically subsets of the `FupTerm` rule.
+///
+/// This is true for the `FupTerm` rule itself as well as for `Callable` and `Indexable` rules.
 pub fn parse_term_like(pair: Pair) -> GrammarTree {
 	let inner = pair.into_inner().nth(0).unwrap();
 
 	match inner.as_rule() {
+		Rule::FupDefine => define::parse_define(inner),
+		Rule::FupLetAny => let_any::parse_let_any(inner),
+
 		Rule::FupExpression => expression::parse_fup_expression(inner),
 
 		Rule::FupCall => call::parse_call(inner),

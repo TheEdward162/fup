@@ -31,7 +31,12 @@ fn parse_input_str(input: &str) -> Result<grammar::GrammarTree, pest::error::Err
 
 fn process_input_str(input: &str) {
 	match parse_input_str(input) {
-		Err(e) => eprintln!("{}", e),
+		Err(e) => {
+			eprintln!("{}", e);
+			if cfg!(debug) {
+				eprintln!("{:?}", e);
+			}
+		}
 		Ok(tree) => println!("{}", tree)
 	}
 }

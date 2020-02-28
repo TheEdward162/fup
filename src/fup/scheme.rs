@@ -8,7 +8,7 @@ pub fn parse_scheme_expression(pair: Pair) -> GrammarTree {
 			Rule::FupTerm => super::parse_term_like(pair),
 			Rule::SchemeExpression => parse_scheme_expression(pair),
 			Rule::Atom => pair.into(),
-			_ => unreachable!()
+			_ => unreachable!("{:?}", pair.as_rule())
 		})
 		.collect::<Vec<_>>()
 		.into()

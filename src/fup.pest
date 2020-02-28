@@ -2,14 +2,15 @@
 
 Input = _{ SOI ~ FupExpression+ ~ EOI }
 
-// FUP rules
+// Expression is a set of terms with operators infixed in between
 FupExpression = {
-	FupDefine |
 	FupTerm ~ (FupInfixOp ~ FupTerm)*
 }
 
 // Atomic FUP expression
 FupTerm = {
+	FupDefine |
+	FupLetAny |
 	FupCall |
 	FupIndex |
 	
@@ -25,23 +26,38 @@ FupTerm = {
 	Name
 }
 
-// Parameters for a function definition
+// DEFINE
 FnParameters = {
 	(Name ~ ("," ~ Name)* ~ ","?)?
 }
-
-// Define special form, with shortcut for function definition
 FupDefine = {
 	"define" ~ Name ~ "=" ~ FupExpression ~ ";" |
 	"define" ~ Name ~ "(" ~ FnParameters ~ ")" ~ "{" ~ FupExpression* ~ "}"
 }
 
-// Arguments for function call
+// LET
+FupLetAssignments = {
+	Name ~ "=" ~ FupExpression ~ ("," ~ FupLetAssignments)*
+}
+FupLet = {
+	"let" ~ FupLetAssignments ~ "{" ~ FupExpression* ~ "}"
+}
+FupLetRec = {
+	"letrec" ~ FupLetAssignments ~ "{" ~ FupExpression* ~ "}"
+}
+FupLetStar = {
+	"let*" ~ FupLetAssignments ~ "{" ~ FupExpression* ~ "}"
+}
+FupLetAny = {
+	FupLetStar |
+	FupLetRec |
+	FupLet
+}
+
+// CALL
 FnArguments = {
 	(FupExpression ~ ("," ~ FupExpression)+ ~ ","?) | (FupExpression ~ ",") | ","
 }
-
-// Function call
 FupCall = {
 	Callable ~ "(" ~ FnArguments ~ ")"
 }
@@ -51,7 +67,7 @@ Callable = {
 	Name
 }
 
-// List indexing
+// INDEX
 FupIndex = {
 	Indexable ~ "[" ~ (FupIndexFull | FupIndexOpenLeft | FupIndexOpenRight | FupIndexExact) ~ "]"
 }
@@ -76,12 +92,10 @@ Indexable = {
 	Name
 }
 
-// Cond expression
+// COND
 FupCond = {
 	"cond" ~ "{" ~ (CondArm ~ ("," ~ CondArm)* ~ ","?)? ~ "}"
 }
-
-// One arm of cond expression
 CondArm = {
 	FupExpression ~ "=>" ~ FupExpression
 }
@@ -126,9 +140,8 @@ OpMathEqual = { "=" }
 
 // FUP names, subset of Scheme identifiers without special symbols (operators)
 Name = @{
-	Letter ~ ( "_" | Letter | Digit )*
+	Letter ~ ( "_" | "?" | Letter | Digit )*
 }
-
 
 // Scheme rules
 SchemeExpression = {

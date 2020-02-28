@@ -52,7 +52,7 @@ macro_rules! test {
 				let fmt_parsed = format!("PARSED:\n{}", parsed);
 				let fmt_tree = format!("TREE:\n{:?}", parsed);
 				let message = format!(
-					"{}\n\n{}\n\n{}\n\n{}",
+					"\n>> {}\n\n>> {}\n\n>> {}\n\n>> {}",
 					fmt_input,
 					fmt_expected,
 					fmt_parsed,
@@ -64,6 +64,7 @@ macro_rules! test {
 	};
 }
 
+// SCHEME
 test! {
 	scheme,
 	r#"
@@ -120,6 +121,7 @@ test! {
 	)
 }
 
+// DEFINE
 test! {
 	define,
 	r#"
@@ -160,6 +162,38 @@ test! {
 	)
 }
 
+// LET
+test! {
+	let_plain,
+	r#"
+		let x = 1 {
+			(display x)
+		}
+	"#,
+	(
+		"let"
+		(("x" "1"))
+		("display" "x")
+	)
+}
+test! {
+	letrec,
+	r#"
+		let x = foo(1,), y = x {
+			y
+		}
+	"#,
+	(
+		"let"
+		(
+			("x" ("foo" "1"))
+			("y" "x")
+		)
+		"y"
+	)
+}
+
+// CALL
 test! {
 	call,
 	r#"
@@ -195,6 +229,7 @@ test! {
 	)
 }
 
+// INDEX
 test! {
 	index_exact,
 	r#"
@@ -258,6 +293,7 @@ test! {
 	)
 }
 
+// COND
 test! {
 	cond,
 	r#"
@@ -281,6 +317,7 @@ test! {
 	)
 }
 
+// INFIX
 test! {
 	infix,
 	r#"
@@ -305,6 +342,7 @@ test! {
 	)
 }
 
+// ESCAPING/MIXING
 test! {
 	mixed,
 	r#"

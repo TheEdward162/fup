@@ -74,7 +74,7 @@ pub fn parse_index(pair: Pair) -> GrammarTree {
 			.into()
 		}
 
-		_ => unreachable!()
+		_ => unreachable!("{:?}", index_range.as_rule())
 	}
 }
 

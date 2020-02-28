@@ -62,21 +62,11 @@ fn climber() -> &'static PrecClimber<Rule> {
 pub fn parse_fup_expression(pair: Pair) -> GrammarTree {
 	assert_eq!(pair.as_rule(), Rule::FupExpression);
 
-	climber().climb(pair.into_inner(), climber_term, climber_infix)
+	climber().climb(pair.into_inner(), super::parse_term_like, climber_infix)
 }
 
 fn climber_infix<'i>(lhs: GrammarTree<'i>, op: Pair<'i>, rhs: GrammarTree<'i>) -> GrammarTree<'i> {
 	vec![parse_infix_operator(op), lhs, rhs].into()
-}
-
-fn climber_term(pair: Pair) -> GrammarTree {
-	match pair.as_rule() {
-		Rule::FupDefine => super::define::parse_define(pair),
-		Rule::FupTerm => super::parse_term_like(pair),
-
-		_ => unreachable!()
-	}
-	.into()
 }
 
 fn parse_infix_operator(pair: Pair) -> GrammarTree<'static> {
@@ -99,7 +89,7 @@ fn parse_infix_operator(pair: Pair) -> GrammarTree<'static> {
 		Rule::OpEqual => "equal?",
 		Rule::OpMathEqual => "=",
 
-		_ => unreachable!()
+		_ => unreachable!("{:?}", pair.as_rule())
 	}
 	.into()
 }
