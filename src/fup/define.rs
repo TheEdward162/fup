@@ -1,6 +1,6 @@
 use std::iter;
 
-use crate::{fup, grammar::GrammarTree, Pair, Rule};
+use crate::{grammar::GrammarTree, Pair, Rule};
 
 pub fn parse_define(pair: Pair) -> GrammarTree {
 	assert_eq!(pair.as_rule(), Rule::FupDefine);
@@ -12,7 +12,7 @@ pub fn parse_define(pair: Pair) -> GrammarTree {
 	let next = pairs.next().unwrap(); // Either `Expression` or `FnParameters`
 	if next.as_rule() == Rule::FupTerm {
 		// define name = value; => (define name value)
-		return vec![name, fup::parse_fup_expression(next)].into()
+		return vec![name, super::parse_fup_expression(next)].into()
 	}
 
 	let parameters = next;
@@ -23,7 +23,7 @@ pub fn parse_define(pair: Pair) -> GrammarTree {
 				.chain(parameters.into_inner().map(GrammarTree::from))
 				.collect()
 		)))
-		.chain(pairs.map(fup::parse_fup_expression))
+		.chain(pairs.map(super::parse_fup_expression))
 		.collect();
 
 	expression.into()

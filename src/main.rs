@@ -33,8 +33,8 @@ fn process_input_str(input: &str) {
 	match parse_input_str(input) {
 		Err(e) => {
 			eprintln!("{}", e);
-			if cfg!(debug) {
-				eprintln!("{:?}", e);
+			if cfg!(debug_assertions) {
+				eprintln!("{:#?}", e);
 			}
 		}
 		Ok(tree) => println!("{}", tree)

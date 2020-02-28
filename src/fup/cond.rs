@@ -1,6 +1,6 @@
 use std::iter;
 
-use crate::{fup, grammar::GrammarTree, Pair, Rule};
+use crate::{grammar::GrammarTree, Pair, Rule};
 
 pub fn parse_cond(pair: Pair) -> GrammarTree {
 	assert_eq!(pair.as_rule(), Rule::FupCond);
@@ -9,7 +9,7 @@ pub fn parse_cond(pair: Pair) -> GrammarTree {
 	iter::once("cond".into())
 		.chain(pair.into_inner().map(|arm| {
 			arm.into_inner()
-				.map(fup::parse_fup_expression)
+				.map(super::parse_fup_expression)
 				.collect::<Vec<_>>()
 				.into()
 		}))

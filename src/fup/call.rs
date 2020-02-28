@@ -1,6 +1,6 @@
 use std::iter;
 
-use crate::{fup, grammar::GrammarTree, Pair, Rule};
+use crate::{grammar::GrammarTree, Pair, Rule};
 
 pub fn parse_call(pair: Pair) -> GrammarTree {
 	assert_eq!(pair.as_rule(), Rule::FupCall);
@@ -12,7 +12,7 @@ pub fn parse_call(pair: Pair) -> GrammarTree {
 
 	// callable(arguments..) => (callable arguments..)
 	let expression: Vec<_> = iter::once(callable)
-		.chain(arguments.into_inner().map(fup::parse_fup_expression))
+		.chain(arguments.into_inner().map(super::parse_fup_expression))
 		.collect();
 
 	expression.into()

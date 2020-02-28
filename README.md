@@ -32,7 +32,6 @@ Helps the readability of define statements:
 define foo(x, y) {
 	(display (+ x y))
 }
-
 define bar = z;
 ```
 becomes
@@ -41,8 +40,36 @@ becomes
 	(foo x y)
 	(display (+ x y))
 )
-
 (define bar z)
+```
+
+### Let
+
+Similar to define, helps with readability:
+
+```scheme
+let x = 1 {
+	(display x)
+}
+let* x = foo(1,), y = x {
+	y
+}
+```
+becomes
+```scheme
+(let
+	(
+		(x 1)
+	)
+	(display x)
+)
+(let*
+	(
+		(x (foo 1))
+		(y x)
+	)
+	y
+)
 ```
 
 ### Function call
@@ -61,13 +88,9 @@ However, calling functions with one or zero arguments has a caveat to avoid ambi
 
 ```scheme
 foo (x) ; not a call
-
 foo (x,) ; unambiguous call
-
 foo(,) ; unambiguous call, no arguments
-
 (lambda (x) x)(1,) ; scheme expression call
-
 { cond {
 	#f => foo,
 	#t => bar
@@ -76,13 +99,9 @@ foo(,) ; unambiguous call, no arguments
 becomes
 ```scheme
 foo (x) ; not a call
-
 (foo x) ; unambiguous call
-
 (foo) ; unambiguous call, no arguments
-
 ((lambda (x) x) 1) ; scheme expression call
-
 (
 	(cond
 		(#f foo)
@@ -119,48 +138,64 @@ Lists can be indexed to avoid nested `car`s and `cdr`s from making list accesses
 
 ```scheme
 lst[1] ; one element index
-
 lst[2..] ; slice-after index
-
 lst[..2] ; slice before index
-
 lst[1..1] ; slice between index, empty
-
 lst[1..3] ; slice between index
-
 (list 1 2)[1] ; scheme expression index
-
 { foo(,) }[0] ; fup expression index
 ```
 becomes
 ```scheme
 (car (cdr lst)) ; one element index
-
 (cdr (cdr lst)) ; slice-after index
-
 (list
 	(car lst)
 	(car (cdr lst))
 ) ; slice before index
-
 () ; slice between index, empty
-
 (
 	list
 	(car (cdr lst))
 	(car (cdr (cdr lst)))
 ) ; slice between index
-
 (
 	car (cdr (list 1 2))
 ) ; scheme expression index
-
 (
 	car (foo)
 ) ; fup expression index
 ```
 
 _**Note**: Be aware that the `..N` and `N..M` variations evaluate the indexed expression as many times as the the length of the resulting list._
+
+### List literal syntax
+
+Lists can be created using `[item, item, ..]` syntax.
+
+```scheme
+[1,2,3]
+[1,2,3,]
+[]              ; useful as '()
+( foo [1,2] )
+( foo [1,2,] )
+( foo [1,] )    ; trailing coma disambiguates list literal
+( foo [1] )     ; indexing into foo has precedence
+( foo [] )      ; with no argument list wins again
+{[1,2,3]}[1]    ; indexing possible when wrapped in {}
+```
+becomes
+```scheme
+(list 1 2 3)
+(list 1 2 3)
+(list)          ; results in the same thing as '()
+(foo (list 1 2))
+(foo (list 1 2))
+(foo (list 1))
+((car (cdr foo)))
+(foo (list))
+(car (cdr (list 1 2 3)))
+```
 
 ### Binary operator infixing
 
