@@ -12,9 +12,10 @@ FupExpression = {
 FupTerm = {
 	FupCall |
 	FupIndex |
-	
+
 	"{" ~ FupExpression ~ "}" |
 	FupCond |
+	FupList |
 
 	SchemeExpression |
 
@@ -84,6 +85,13 @@ FupCond = {
 // One arm of cond expression
 CondArm = {
 	FupExpression ~ "=>" ~ FupExpression
+}
+
+// List literal
+FupList = {
+	"[" ~ "]" |
+	"[" ~ FupTerm ~ "," ~ "]" |
+	"[" ~ FupTerm ~ ("," ~ FupTerm)+ ~ ","? ~ "]"
 }
 
 // Infix operators

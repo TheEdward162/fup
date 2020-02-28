@@ -326,3 +326,27 @@ test! {
 		)
 	)
 }
+
+test! {
+	lists,
+	r#"
+		[1,2,3]
+		[1,2,3,]
+		[]
+		( foo [1,2] )
+		( foo [1,2,] )
+		( foo [1,] )    ; trailing coma disambiguates list literal
+		( foo [1] )     ; indexing into foo has precedence
+		( foo [] )      ; with no argument list wins again
+		{[1,2,3]}[1]    ; indexing possible when wrapped in {}
+	"#,
+	("list" "1" "2" "3")
+	("list" "1" "2" "3")
+	("list")
+	("foo" ("list" "1" "2"))
+	("foo" ("list" "1" "2"))
+	("foo" ("list" "1"))
+	(("car" ("cdr" "foo")))
+	("foo" ("list"))
+	("car" ("cdr" ("list" "1" "2" "3")))
+}

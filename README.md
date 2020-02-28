@@ -162,6 +162,34 @@ becomes
 
 _**Note**: Be aware that the `..N` and `N..M` variations evaluate the indexed expression as many times as the the length of the resulting list._
 
+### List literal syntax
+
+Lists can be created using `[item, item, ..]` syntax.
+
+```scheme
+[1,2,3]
+[1,2,3,]
+[]              ; useful as '()
+( foo [1,2] )
+( foo [1,2,] )
+( foo [1,] )    ; trailing coma disambiguates list literal
+( foo [1] )     ; indexing into foo has precedence
+( foo [] )      ; with no argument list wins again
+{[1,2,3]}[1]    ; indexing possible when wrapped in {}
+```
+becomes
+```scheme
+(list 1 2 3)
+(list 1 2 3)
+(list)          ; results in the same thing as '()
+(foo (list 1 2))
+(foo (list 1 2))
+(foo (list 1))
+((car (cdr foo)))
+(foo (list))
+(car (cdr (list 1 2 3)))
+```
+
 ### Binary operator infixing
 
 Binary operators can be infixed as in other langauges:
