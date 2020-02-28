@@ -3,6 +3,7 @@ mod cond;
 mod define;
 mod expression;
 mod index;
+mod list;
 mod scheme;
 
 pub use expression::parse_fup_expression;
@@ -19,6 +20,7 @@ pub fn parse_term_like(pair: Pair) -> GrammarTree {
 		Rule::FupCall => call::parse_call(inner),
 		Rule::FupIndex => index::parse_index(inner),
 		Rule::FupCond => cond::parse_cond(inner),
+		Rule::FupList => list::parse_list(inner),
 
 		Rule::SchemeExpression => scheme::parse_scheme_expression(inner),
 
