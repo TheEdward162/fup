@@ -41,13 +41,13 @@ FupLetAssignments = {
 	Name ~ "=" ~ FupExpression ~ ("," ~ FupLetAssignments)*
 }
 FupLet = {
-	"let" ~ FupLetAssignments ~ "{" ~ FupExpression* ~ "}"
+	"let" ~ FupLetAssignments ~ FupExpression*
 }
 FupLetRec = {
-	"letrec" ~ FupLetAssignments ~ "{" ~ FupExpression* ~ "}"
+	"letrec" ~ FupLetAssignments ~ FupExpression*
 }
 FupLetStar = {
-	"let*" ~ FupLetAssignments ~ "{" ~ FupExpression* ~ "}"
+	"let*" ~ FupLetAssignments ~ FupExpression*
 }
 FupLetAny = {
 	FupLetStar |
