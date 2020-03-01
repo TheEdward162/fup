@@ -7,7 +7,7 @@ pub fn parse_index(pair: Pair) -> GrammarTree {
 
 	let mut pairs = pair.into_inner();
 
-	let indexable: GrammarTree = super::parse_term_like(pairs.next().unwrap());
+	let indexable: GrammarTree = parse_indexable(pairs.next().unwrap());
 
 	let index_range = pairs.next().unwrap();
 	match index_range.as_rule() {
@@ -90,4 +90,18 @@ fn index_until(indexable: GrammarTree, end_index: usize) -> impl Iterator<Item =
 		]
 		.into()
 	})
+}
+
+fn parse_indexable(pair: Pair) -> GrammarTree {
+	assert_eq!(pair.as_rule(), Rule::Indexable);
+	
+	let inner = pair.into_inner().nth(0).unwrap();
+
+	match inner.as_rule() {
+		Rule::OperatorExpression => super::parse_operator_expression(inner),
+		Rule::SchemeExpression => super::scheme::parse_scheme_expression(inner),
+		Rule::Name => inner.into(),
+
+		_ => unreachable!("{:?}", inner.as_rule())
+	}
 }

@@ -17,35 +17,34 @@ pub fn parse_fup_expression(pair: Pair) -> GrammarTree {
 	let inner = pair.into_inner().nth(0).unwrap();
 
 	match inner.as_rule() {
-		Rule::FupTerm => parse_term_like(inner),
+		Rule::FupTerm => parse_fup_term(inner),
+		
+		Rule::Name => inner.into(), // Name is a subset of Identifier, because Identifiers (like `get-x`) are be ambiguous in FUP.
 
 		_ => unreachable!("{:?}", inner.as_rule())
 	}
 }
 
-/// Parses rules that are gramatically subsets of the `FupTerm` rule.
-///
-/// This is true for the `FupTerm` rule itself as well as for `Callable` and `Indexable` rules.
-pub fn parse_term_like(pair: Pair) -> GrammarTree {
+pub fn parse_fup_term(pair: Pair) -> GrammarTree {
+	assert_eq!(pair.as_rule(), Rule::FupTerm);
+	
 	let inner = pair.into_inner().nth(0).unwrap();
 
 	match inner.as_rule() {
+		Rule::FupList => list::parse_list(inner),
 		Rule::FupQuote => GrammarTree::Atom(inner.as_str()),
 
-		Rule::FupDefine => define::parse_define(inner),
 		Rule::FupLetAny => let_any::parse_let_any(inner),
-
-		Rule::OperatorExpression => operator::parse_operator_expression(inner),
-		Rule::FupExpression => parse_fup_expression(inner),
-
-		Rule::FupCall => call::parse_call(inner),
-		Rule::FupIndex => index::parse_index(inner),
+		Rule::FupDefine => define::parse_define(inner),
 		Rule::FupCond => cond::parse_cond(inner),
-		Rule::FupList => list::parse_list(inner),
+
+		Rule::FupIndex => index::parse_index(inner),
+		Rule::FupCall => call::parse_call(inner),
 
 		Rule::SchemeExpression => scheme::parse_scheme_expression(inner),
+		Rule::OperatorExpression => operator::parse_operator_expression(inner),
 
-		Rule::Number | Rule::Boolean | Rule::Character | Rule::String | Rule::Name => inner.into(),
+		Rule::Number | Rule::Boolean | Rule::Character | Rule::String => inner.into(),
 
 		_ => unreachable!("{:?}", inner.as_rule())
 	}

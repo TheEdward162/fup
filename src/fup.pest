@@ -8,29 +8,31 @@ OperatorExpression = {
 }
 
 // Expression which cannot be direcly embedded in Scheme because it would be ambiguous.
+// Contains Name because Identifier would be ambiguous in FUP.
 FupExpression = {
-	FupTerm
+	FupTerm |
+	Name
 }
 
-// Expression which is unambiguous to Scheme expressions.
+// Expression which is unambiguous in Scheme expressions.
 FupTerm = {
-	FupQuote |
-	FupDefine |
-	FupLetAny |
-	FupCall |
-	FupIndex |
-
-	"{" ~ OperatorExpression ~ "}" |
-	FupCond |
 	FupList |
+	FupQuote |
+	
+	FupLetAny |
+	FupDefine |
+	FupCond |
+	
+	FupIndex |
+	FupCall |
 
 	SchemeExpression |
+	"{" ~ OperatorExpression ~ "}" |
 
 	Number |
 	Boolean |
 	Character |
-	String |
-	Name
+	String
 }
 
 // QUOTE
@@ -170,7 +172,7 @@ Name = @{
 
 // Scheme rules
 SchemeExpression = {
-	"(" ~ ( FupTerm | SchemeExpression | Atom )* ~ ")"
+	"(" ~ ( FupTerm | Atom )* ~ ")"
 }
 
 Atom = ${
