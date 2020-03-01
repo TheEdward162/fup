@@ -423,3 +423,29 @@ test! {
 	"'(foo bar baz)"
 	(foo "'bar")
 }
+
+// LAMBDA
+test! {
+	lambda,
+	r#"
+		map(lambda (x) x+1, lst)
+		{lambda (x) x}(1,)
+		lambda(x,y) x+y
+		lambda(x,y,) x+y
+	"#,
+	(map (lambda (x) ("+" x 1)) lst)
+	((lambda (x) x) 1)
+	(lambda (x y) ("+" x y))
+	(lambda (x y) ("+" x y))
+}
+
+// IF
+test! {
+	ifexpr,
+	r#"
+		if a > 1 { #t } else { #f }
+		foo(if a > 1 { #t } else { #f },)
+	"#,
+	(if (">" a 1) "#t" "#f")
+	(foo (if (">" a 1) "#t" "#f"))
+}

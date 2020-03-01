@@ -1,7 +1,9 @@
 mod call;
 mod cond;
 mod define;
+mod ifexpr;
 mod index;
+mod lambda;
 mod let_any;
 mod list;
 mod operator;
@@ -18,6 +20,7 @@ pub fn parse_fup_expression(pair: Pair) -> GrammarTree {
 
 	match inner.as_rule() {
 		Rule::FupTerm => parse_fup_term(inner),
+		Rule::FupLambda => lambda::parse_lambda(inner),
 
 		Rule::Name => inner.into(), /* Name is a subset of Identifier, because Identifiers (like `get-x`) are be ambiguous in FUP. */
 
@@ -37,6 +40,7 @@ pub fn parse_fup_term(pair: Pair) -> GrammarTree {
 		Rule::FupLetAny => let_any::parse_let_any(inner),
 		Rule::FupDefine => define::parse_define(inner),
 		Rule::FupCond => cond::parse_cond(inner),
+		Rule::FupIf => ifexpr::parse_if(inner),
 
 		Rule::FupIndex => index::parse_index(inner),
 		Rule::FupCall => call::parse_call(inner),

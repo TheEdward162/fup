@@ -10,6 +10,7 @@ OperatorExpression = {
 // Expression which cannot be direcly embedded in Scheme because it would be ambiguous.
 // Contains Name because Identifier would be ambiguous in FUP.
 FupExpression = {
+	FupLambda |
 	FupTerm |
 	Name
 }
@@ -20,6 +21,7 @@ FupTerm = {
 	FupQuote |
 	
 	FupLetAny |
+	FupIf |
 	FupDefine |
 	FupCond |
 	
@@ -72,6 +74,16 @@ FupLetAny = {
 	FupLetStar |
 	FupLetRec |
 	FupLet
+}
+
+// IF
+FupIf = {
+	"if" ~ OperatorExpression ~ "{" ~ OperatorExpression ~ "}" ~ "else" ~ "{" ~ OperatorExpression ~ "}"
+}
+
+// LAMBDA
+FupLambda = {
+	"lambda" ~ "(" ~ FnParameters ~ ")" ~ OperatorExpression
 }
 
 // CALL
