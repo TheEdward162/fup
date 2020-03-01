@@ -1,10 +1,12 @@
 mod call;
 mod cond;
 mod define;
-mod operator;
+mod ifexpr;
 mod index;
+mod lambda;
 mod let_any;
 mod list;
+mod operator;
 mod scheme;
 
 pub use operator::parse_operator_expression;
@@ -18,6 +20,7 @@ pub fn parse_fup_expression(pair: Pair) -> GrammarTree {
 
 	match inner.as_rule() {
 		Rule::FupTerm => parse_term_like(inner),
+		Rule::FupLambda => lambda::parse_lambda(inner),
 
 		_ => unreachable!("{:?}", inner.as_rule())
 	}
@@ -34,6 +37,7 @@ pub fn parse_term_like(pair: Pair) -> GrammarTree {
 
 		Rule::FupDefine => define::parse_define(inner),
 		Rule::FupLetAny => let_any::parse_let_any(inner),
+		Rule::FupIf => ifexpr::parse_if(inner),
 
 		Rule::OperatorExpression => operator::parse_operator_expression(inner),
 		Rule::FupExpression => parse_fup_expression(inner),
