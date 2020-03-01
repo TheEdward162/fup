@@ -94,7 +94,7 @@ fn index_until(indexable: GrammarTree, end_index: usize) -> impl Iterator<Item =
 
 fn parse_indexable(pair: Pair) -> GrammarTree {
 	assert_eq!(pair.as_rule(), Rule::Indexable);
-	
+
 	let inner = pair.into_inner().nth(0).unwrap();
 
 	match inner.as_rule() {

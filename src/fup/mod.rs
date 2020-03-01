@@ -1,10 +1,10 @@
 mod call;
 mod cond;
 mod define;
-mod operator;
 mod index;
 mod let_any;
 mod list;
+mod operator;
 mod scheme;
 
 pub use operator::parse_operator_expression;
@@ -13,13 +13,13 @@ use crate::{grammar::GrammarTree, Pair, Rule};
 
 pub fn parse_fup_expression(pair: Pair) -> GrammarTree {
 	assert_eq!(pair.as_rule(), Rule::FupExpression);
-	
+
 	let inner = pair.into_inner().nth(0).unwrap();
 
 	match inner.as_rule() {
 		Rule::FupTerm => parse_fup_term(inner),
-		
-		Rule::Name => inner.into(), // Name is a subset of Identifier, because Identifiers (like `get-x`) are be ambiguous in FUP.
+
+		Rule::Name => inner.into(), /* Name is a subset of Identifier, because Identifiers (like `get-x`) are be ambiguous in FUP. */
 
 		_ => unreachable!("{:?}", inner.as_rule())
 	}
@@ -27,7 +27,7 @@ pub fn parse_fup_expression(pair: Pair) -> GrammarTree {
 
 pub fn parse_fup_term(pair: Pair) -> GrammarTree {
 	assert_eq!(pair.as_rule(), Rule::FupTerm);
-	
+
 	let inner = pair.into_inner().nth(0).unwrap();
 
 	match inner.as_rule() {

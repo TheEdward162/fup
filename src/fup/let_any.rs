@@ -46,7 +46,10 @@ fn parse_assignments(pair: Pair) -> GrammarTree {
 		let name = first.unwrap();
 		let expression = inner.next().unwrap();
 
-		let tree = GrammarTree::List(vec![name.into(), super::parse_operator_expression(expression)]);
+		let tree = GrammarTree::List(vec![
+			name.into(),
+			super::parse_operator_expression(expression),
+		]);
 
 		list.push(tree);
 

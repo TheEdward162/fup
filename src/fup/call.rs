@@ -20,7 +20,7 @@ pub fn parse_call(pair: Pair) -> GrammarTree {
 
 fn parse_callable(pair: Pair) -> GrammarTree {
 	assert_eq!(pair.as_rule(), Rule::Callable);
-	
+
 	let inner = pair.into_inner().nth(0).unwrap();
 
 	match inner.as_rule() {

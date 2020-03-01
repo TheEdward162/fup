@@ -62,7 +62,11 @@ fn climber() -> &'static PrecClimber<Rule> {
 pub fn parse_operator_expression(pair: Pair) -> GrammarTree {
 	assert_eq!(pair.as_rule(), Rule::OperatorExpression);
 
-	climber().climb(pair.into_inner(), super::parse_fup_expression, climber_infix)
+	climber().climb(
+		pair.into_inner(),
+		super::parse_fup_expression,
+		climber_infix
+	)
 }
 
 fn climber_infix<'i>(lhs: GrammarTree<'i>, op: Pair<'i>, rhs: GrammarTree<'i>) -> GrammarTree<'i> {
