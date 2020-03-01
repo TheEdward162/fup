@@ -54,6 +54,12 @@ let x = 1 {
 let* x = foo(1,), y = x {
 	y
 }
+
+; Can also be implicitly scoped
+define foo(x, y) {
+	let z = x + y
+	(display z)
+}
 ```
 becomes
 ```scheme
@@ -69,6 +75,15 @@ becomes
 		(y x)
 	)
 	y
+)
+(define
+	(foo x y)
+	(let
+		(
+			(z (+ x y))
+		)
+		(display z)
+	)
 )
 ```
 
@@ -235,7 +250,3 @@ becomes
 	(+ x y)
 )
 ```
-
-## Planned features
-
-* Implicitly scoped let statements
