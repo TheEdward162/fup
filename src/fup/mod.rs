@@ -18,6 +18,8 @@ pub fn parse_term_like(pair: Pair) -> GrammarTree {
 	let inner = pair.into_inner().nth(0).unwrap();
 
 	match inner.as_rule() {
+		Rule::FupQuote => GrammarTree::Atom(inner.as_str()),
+
 		Rule::FupDefine => define::parse_define(inner),
 		Rule::FupLetAny => let_any::parse_let_any(inner),
 

@@ -293,7 +293,7 @@ test! {
 	index_expression,
 	r#"
 		{a[0]}[0]
-		
+
 		(list 1 2)[1]
 
 		{ foo(,) }[0]
@@ -404,4 +404,17 @@ test! {
 	(("car" ("cdr" "foo")))
 	("foo" ("list"))
 	("car" ("cdr" ("list" "1" "2" "3")))
+}
+
+// QUOTE
+test! {
+	quote,
+	r#"
+		'foo
+		'(foo bar baz)
+		foo('bar,)
+	"#,
+	"'foo"
+	"'(foo bar baz)"
+	("foo" "'bar")
 }
