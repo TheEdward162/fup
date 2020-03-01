@@ -9,6 +9,7 @@ FupExpression = {
 
 // Atomic FUP expression
 FupTerm = {
+	FupQuote |
 	FupDefine |
 	FupLetAny |
 	FupCall |
@@ -25,6 +26,17 @@ FupTerm = {
 	Character |
 	String |
 	Name
+}
+
+// QUOTE
+FupQuote = @{
+	"'" ~ "(" ~ FupQuoteInner* ~ ")" |
+	"`" ~ "(" ~ FupQuoteInner* ~ ")" |
+	"'" ~ Identifier
+}
+FupQuoteInner = @{
+	(!("(" | ")") ~ ANY)+ |
+	"(" ~ FupQuoteInner* ~ ")"
 }
 
 // DEFINE
