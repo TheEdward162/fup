@@ -4,8 +4,13 @@ macro_rules! grammar_tree {
 	(
 		$atom: literal
 	) => {
-		$crate::grammar::GrammarTree::Atom($atom)
+		$crate::grammar::GrammarTree::Atom(concat!("", $atom))
 	};
+    (
+        $atom: ident
+    ) => {
+		$crate::grammar::GrammarTree::Atom(stringify!($atom))
+    };
 	(
 		()
 	) => {
@@ -84,19 +89,19 @@ test! {
 		(fib 10)
 	"#,
 	(
-		"define" ("fib" "n")
-		("cond"
-		 (("=" "n" "0") "0")
-		 (("=" "n" "1") "1")
+		define (fib n)
+		(cond
+		 (("=" n 0) 0)
+		 (("=" n 1) 1)
 		 ("#t" (
 				 "+"
-				 ("fib" ("-" "n" "1"))
-				 ("fib" ("-" "n" "2"))
+				 (fib ("-" n 1))
+				 (fib ("-" n 2))
 		 ))
 		)
 	)
 
-	("fib" "10")
+	(fib 10)
 }
 test! {
 	scheme_let,
@@ -104,9 +109,9 @@ test! {
 		(let ((x 1)) x)
 	"#,
 	(
-		"let"
-		(("x" "1"))
-		"x"
+		let
+		((x 1))
+		x
 	)
 }
 test! {
@@ -115,9 +120,9 @@ test! {
 		(let ((x 1) (y 1)) (+ x y))
 	"#,
 	(
-		"let"
-		(("x" "1") ("y" "1"))
-		("+" "x" "y")
+		let
+		((x 1) (y 1))
+		("+" x y)
 	)
 }
 
@@ -134,18 +139,18 @@ test! {
 		(define (FOO x) (+ x 1))
 	"#,
 	(
-		"define"
-		("FOO" "x")
-		("+" "x" "1")
+		define
+		(FOO x)
+		("+" x 1)
 	)
 	(
-		"display"
-		("FOO" "1")
+		display
+		(FOO 1)
 	)
 	(
-		"define"
-		("FOO" "x")
-		("+" "x" "1")
+		define
+		(FOO x)
+		("+" x 1)
 	)
 }
 test! {
@@ -156,9 +161,9 @@ test! {
 		}
 	"#,
 	(
-		"define"
-		("FOO" "x")
-		("+" "x" "1")
+		define
+		(FOO x)
+		("+" x 1)
 	)
 }
 
@@ -171,11 +176,11 @@ test! {
 		}
 	"#,
 	(
-		"let"
+		let
 		(
-			("x" "1")
+			(x 1)
 		)
-		("display" "x")
+		(display x)
 	)
 }
 test! {
@@ -188,10 +193,10 @@ test! {
 	(
 		"let*"
 		(
-			("x" ("foo" "1"))
-			("y" "x")
+			(x (foo 1))
+			(y x)
 		)
-		"y"
+		y
 	)
 }
 test! {
@@ -201,11 +206,11 @@ test! {
 		(display x)
 	"#,
 	(
-		"let"
+		let
 		(
-			("x" "1")
+			(x 1)
 		)
-		("display" "x")
+		(display x)
 	)
 }
 
@@ -221,10 +226,10 @@ test! {
 
 		func(,)
 	"#,
-	("func" "arg1" "arg2")
-	("func" "arg")
-	("func" "arg")
-	("func")
+	(func arg1 arg2)
+	(func arg)
+	(func arg)
+	(func)
 }
 test! {
 	call_expression,
@@ -233,15 +238,15 @@ test! {
 		(lambda (x) x)(1,)
 	"#,
 	(
-		("cond"
-			("#f" "foo")
-			("#t" "bar")
+		(cond
+			("#f" foo)
+			("#t" bar)
 		)
-		"1"
-		("+" "1" "1")
+		1
+		("+" 1 1)
 	)
 	(
-		("lambda" ("x") "x") "1"
+		(lambda (x) x) 1
 	)
 }
 
@@ -251,14 +256,14 @@ test! {
 	r#"
 		a[1]
 	"#,
-	("car" ("cdr" "a"))
+	(car (cdr a))
 }
 test! {
 	index_right_open,
 	r#"
 		b[2..]
 	"#,
-	("cdr" ("cdr" "b"))
+	(cdr (cdr b))
 }
 test! {
 	index_left_open,
@@ -266,9 +271,9 @@ test! {
 		c[..2]
 	"#,
 	(
-		"list"
-		("car" "c")
-		("car" ("cdr" "c"))
+		list
+		(car c)
+		(car (cdr c))
 	)
 }
 test! {
@@ -284,9 +289,9 @@ test! {
 		e[1..3]
 	"#,
 	(
-		"list"
-		("car" ("cdr" "e"))
-		("car" ("cdr" ("cdr" "e")))
+		list
+		(car (cdr e))
+		(car (cdr (cdr e)))
 	)
 }
 test! {
@@ -299,13 +304,13 @@ test! {
 		{ foo(,) }[0]
 	"#,
 	(
-		"car" ("car" "a")
+		car (car a)
 	)
 	(
-		"car" ("cdr" ("list" "1" "2"))
+		car (cdr (list 1 2))
 	)
 	(
-		"car" ("foo")
+		car (foo)
 	)
 }
 
@@ -321,15 +326,15 @@ test! {
 
 		(cond ((= 1 2) (display 1)) ((= 1 3) (display 2)) (else (display 3)))
 	"#,
-	("cond"
-		(("=" "1" "2") ("display" "1"))
-		(("=" "1" "3") ("display" "2"))
-		("else" ("display" "3"))
+	(cond
+		(("=" 1 2) (display 1))
+		(("=" 1 3) (display 2))
+		(else (display 3))
 	)
 	("cond"
-		(("=" "1" "2") ("display" "1"))
-		(("=" "1" "3") ("display" "2"))
-		("else" ("display" "3"))
+		(("=" 1 2) (display 1))
+		(("=" 1 3) (display 2))
+		(else (display 3))
 	)
 }
 
@@ -347,14 +352,14 @@ test! {
 			{x + y}
 		)
 	"#,
-	("*" "6" "7")
-	("-" ("+" "1" "2") ("/" "3" "2"))
-	("cons" "a" ("cons" "b" "c"))
-	("cons" "a" ("cons" "b" "c"))
-	("*" ("+" "1" "2") "3")
-	("define"
-		("foo" "x" "y")
-		("+" "x" "y")
+	("*" 6 7)
+	("-" ("+" 1 2) ("/" 3 2))
+	(cons a (cons b c))
+	(cons a (cons b c))
+	("*" ("+" 1 2) 3)
+	(define
+		(foo x y)
+		("+" x y)
 	)
 }
 
@@ -367,16 +372,16 @@ test! {
 		(+ 1 { 6 * 7 })
 		(foo cond { a => b, c => d })
 	"#,
-	("+" "1" ("a" "b"))
-	("list"
-		("car" "a")
-		("car" ("cdr" "a"))
+	("+" 1 (a b))
+	(list
+		(car a)
+		(car (cdr a))
 	)
-	("+" "1" ("*" "6" "7"))
-	("foo"
-		("cond"
-			("a" "b")
-			("c" "d")
+	("+" 1 ("*" 6 7))
+	(foo
+		(cond
+			(a b)
+			(c d)
 		)
 	)
 }
@@ -395,15 +400,15 @@ test! {
 		( foo [] )      ; with no argument list wins again
 		{[1,2,3]}[1]    ; indexing possible when wrapped in {}
 	"#,
-	("list" "1" "2" "3")
-	("list" "1" "2" "3")
-	("list")
-	("foo" ("list" "1" "2"))
-	("foo" ("list" "1" "2"))
-	("foo" ("list" "1"))
-	(("car" ("cdr" "foo")))
-	("foo" ("list"))
-	("car" ("cdr" ("list" "1" "2" "3")))
+	(list 1 2 3)
+	(list 1 2 3)
+	(list)
+	(foo (list 1 2))
+	(foo (list 1 2))
+	(foo (list 1))
+	((car (cdr foo)))
+	(foo (list))
+	(car (cdr (list 1 2 3)))
 }
 
 // QUOTE
@@ -416,5 +421,5 @@ test! {
 	"#,
 	"'foo"
 	"'(foo bar baz)"
-	("foo" "'bar")
+	(foo "'bar")
 }
