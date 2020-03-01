@@ -104,8 +104,8 @@ CondArm = {
 // List literal
 FupList = {
 	"[" ~ "]" |
-	"[" ~ FupTerm ~ "," ~ "]" |
-	"[" ~ FupTerm ~ ("," ~ FupTerm)+ ~ ","? ~ "]"
+	"[" ~ FupExpression ~ "," ~ "]" |
+	"[" ~ FupExpression ~ ("," ~ FupExpression)+ ~ ","? ~ "]"
 }
 
 // Infix operators
