@@ -22,7 +22,7 @@ fn parse_input_str(input: &str) -> Result<grammar::GrammarTree, pest::error::Err
 		pairs
 			.into_iter()
 			.filter(|p| p.as_rule() != Rule::EOI)
-			.map(fup::parse_fup_expression)
+			.map(fup::parse_operator_expression)
 			.collect()
 	);
 

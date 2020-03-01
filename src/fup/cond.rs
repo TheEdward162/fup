@@ -9,7 +9,7 @@ pub fn parse_cond(pair: Pair) -> GrammarTree {
 	iter::once("cond".into())
 		.chain(pair.into_inner().map(|arm| {
 			arm.into_inner()
-				.map(super::parse_fup_expression)
+				.map(super::parse_operator_expression)
 				.collect::<Vec<_>>()
 				.into()
 		}))

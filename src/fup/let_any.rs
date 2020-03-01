@@ -23,7 +23,7 @@ pub fn parse_let_any(pair: Pair) -> GrammarTree {
 	GrammarTree::List(
 		iter::once(let_type)
 			.chain(iter::once(assignments))
-			.chain(pairs.map(super::parse_fup_expression))
+			.chain(pairs.map(super::parse_operator_expression))
 			.collect()
 	)
 }
@@ -46,7 +46,7 @@ fn parse_assignments(pair: Pair) -> GrammarTree {
 		let name = first.unwrap();
 		let expression = inner.next().unwrap();
 
-		let tree = GrammarTree::List(vec![name.into(), super::parse_fup_expression(expression)]);
+		let tree = GrammarTree::List(vec![name.into(), super::parse_operator_expression(expression)]);
 
 		list.push(tree);
 

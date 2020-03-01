@@ -1,15 +1,27 @@
 mod call;
 mod cond;
 mod define;
-mod expression;
+mod operator;
 mod index;
 mod let_any;
 mod list;
 mod scheme;
 
-pub use expression::parse_fup_expression;
+pub use operator::parse_operator_expression;
 
 use crate::{grammar::GrammarTree, Pair, Rule};
+
+pub fn parse_fup_expression(pair: Pair) -> GrammarTree {
+	assert_eq!(pair.as_rule(), Rule::FupExpression);
+	
+	let inner = pair.into_inner().nth(0).unwrap();
+
+	match inner.as_rule() {
+		Rule::FupTerm => parse_term_like(inner),
+
+		_ => unreachable!("{:?}", inner.as_rule())
+	}
+}
 
 /// Parses rules that are gramatically subsets of the `FupTerm` rule.
 ///
@@ -23,7 +35,8 @@ pub fn parse_term_like(pair: Pair) -> GrammarTree {
 		Rule::FupDefine => define::parse_define(inner),
 		Rule::FupLetAny => let_any::parse_let_any(inner),
 
-		Rule::FupExpression => expression::parse_fup_expression(inner),
+		Rule::OperatorExpression => operator::parse_operator_expression(inner),
+		Rule::FupExpression => parse_fup_expression(inner),
 
 		Rule::FupCall => call::parse_call(inner),
 		Rule::FupIndex => index::parse_index(inner),

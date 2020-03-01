@@ -9,10 +9,10 @@ pub fn parse_define(pair: Pair) -> GrammarTree {
 
 	let name = pairs.next().unwrap().into();
 
-	let next = pairs.next().unwrap(); // Either `Expression` or `FnParameters`
-	if next.as_rule() == Rule::FupTerm {
+	let next = pairs.next().unwrap(); // Either `OperatorExpression` or `FnParameters`
+	if next.as_rule() == Rule::OperatorExpression {
 		// define name = value; => (define name value)
-		return vec![name, super::parse_fup_expression(next)].into()
+		return vec![name, super::parse_operator_expression(next)].into()
 	}
 
 	let parameters = next;
@@ -23,7 +23,7 @@ pub fn parse_define(pair: Pair) -> GrammarTree {
 				.chain(parameters.into_inner().map(GrammarTree::from))
 				.collect()
 		)))
-		.chain(pairs.map(super::parse_fup_expression))
+		.chain(pairs.map(super::parse_operator_expression))
 		.collect();
 
 	expression.into()

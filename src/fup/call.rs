@@ -12,7 +12,7 @@ pub fn parse_call(pair: Pair) -> GrammarTree {
 
 	// callable(arguments..) => (callable arguments..)
 	let expression: Vec<_> = iter::once(callable)
-		.chain(arguments.into_inner().map(super::parse_fup_expression))
+		.chain(arguments.into_inner().map(super::parse_operator_expression))
 		.collect();
 
 	expression.into()

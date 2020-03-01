@@ -7,7 +7,7 @@ pub fn parse_list(pair: Pair) -> GrammarTree {
 
 	// [ a, b, .. ] => (list a b ..)
 	iter::once("list".into())
-		.chain(pair.into_inner().map(super::parse_fup_expression))
+		.chain(pair.into_inner().map(super::parse_operator_expression))
 		.collect::<Vec<_>>()
 		.into()
 }

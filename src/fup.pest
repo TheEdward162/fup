@@ -1,13 +1,18 @@
 // FUP - Fuck Unclosed Parens
 
-Input = _{ SOI ~ FupExpression+ ~ EOI }
+Input = _{ SOI ~ OperatorExpression+ ~ EOI }
 
-// Expression is a set of terms with operators infixed in between
-FupExpression = {
-	FupTerm ~ (FupInfixOp ~ FupTerm)*
+// Expression of infix operators.
+OperatorExpression = {
+	FupExpression ~ (FupInfixOp ~ FupExpression)*
 }
 
-// Atomic FUP expression
+// Expression which cannot be direcly embedded in Scheme because it would be ambiguous.
+FupExpression = {
+	FupTerm
+}
+
+// Expression which is unambiguous to Scheme expressions.
 FupTerm = {
 	FupQuote |
 	FupDefine |
@@ -15,7 +20,7 @@ FupTerm = {
 	FupCall |
 	FupIndex |
 
-	"{" ~ FupExpression ~ "}" |
+	"{" ~ OperatorExpression ~ "}" |
 	FupCond |
 	FupList |
 
@@ -44,22 +49,22 @@ FnParameters = {
 	(Name ~ ("," ~ Name)* ~ ","?)?
 }
 FupDefine = {
-	"define" ~ Name ~ "=" ~ FupExpression ~ ";" |
-	"define" ~ Name ~ "(" ~ FnParameters ~ ")" ~ "{" ~ FupExpression* ~ "}"
+	"define" ~ Name ~ "=" ~ OperatorExpression ~ ";" |
+	"define" ~ Name ~ "(" ~ FnParameters ~ ")" ~ "{" ~ OperatorExpression* ~ "}"
 }
 
 // LET
 FupLetAssignments = {
-	Name ~ "=" ~ FupExpression ~ ("," ~ FupLetAssignments)*
+	Name ~ "=" ~ OperatorExpression ~ ("," ~ FupLetAssignments)*
 }
 FupLet = {
-	"let" ~ FupLetAssignments ~ FupExpression*
+	"let" ~ FupLetAssignments ~ OperatorExpression*
 }
 FupLetRec = {
-	"letrec" ~ FupLetAssignments ~ FupExpression*
+	"letrec" ~ FupLetAssignments ~ OperatorExpression*
 }
 FupLetStar = {
-	"let*" ~ FupLetAssignments ~ FupExpression*
+	"let*" ~ FupLetAssignments ~ OperatorExpression*
 }
 FupLetAny = {
 	FupLetStar |
@@ -69,13 +74,13 @@ FupLetAny = {
 
 // CALL
 FnArguments = {
-	(FupExpression ~ ("," ~ FupExpression)+ ~ ","?) | (FupExpression ~ ",") | ","
+	(OperatorExpression ~ ("," ~ OperatorExpression)+ ~ ","?) | (OperatorExpression ~ ",") | ","
 }
 FupCall = {
 	Callable ~ "(" ~ FnArguments ~ ")"
 }
 Callable = {
-	"{" ~ FupExpression ~ "}" |
+	"{" ~ OperatorExpression ~ "}" |
 	SchemeExpression |
 	Name
 }
@@ -100,7 +105,7 @@ IndexNumber = @{
 	Digit+
 }
 Indexable = {
-	"{" ~ FupExpression ~ "}" |
+	"{" ~ OperatorExpression ~ "}" |
 	SchemeExpression |
 	Name
 }
@@ -110,14 +115,14 @@ FupCond = {
 	"cond" ~ "{" ~ (CondArm ~ ("," ~ CondArm)* ~ ","?)? ~ "}"
 }
 CondArm = {
-	FupExpression ~ "=>" ~ FupExpression
+	OperatorExpression ~ "=>" ~ OperatorExpression
 }
 
 // List literal
 FupList = {
 	"[" ~ "]" |
-	"[" ~ FupExpression ~ "," ~ "]" |
-	"[" ~ FupExpression ~ ("," ~ FupExpression)+ ~ ","? ~ "]"
+	"[" ~ OperatorExpression ~ "," ~ "]" |
+	"[" ~ OperatorExpression ~ ("," ~ OperatorExpression)+ ~ ","? ~ "]"
 }
 
 // Infix operators
